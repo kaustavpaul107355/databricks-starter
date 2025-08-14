@@ -62,14 +62,17 @@ This project includes Databricks Connect configuration for local development, al
 
 ### Token Management
 
-- **Current token expires**: January 14, 2026 (365 days)
-- **Token type**: Personal Access Token with maximum longevity
+- **Token lifetime**: 90 days maximum (workspace policy)
+- **Token type**: Personal Access Token
 - **Security**: Tokens are stored in environment variables, not in code
+- **Renewal**: Set calendar reminders to renew before expiration
 
-To create a new long-lived token:
+To create a new token:
 ```bash
-databricks tokens create --comment "Long-lived Databricks Connect Token" --lifetime-seconds 31536000 --profile your-profile
+databricks tokens create --comment "Databricks Connect Token" --profile your-profile
 ```
+
+**Note**: The `--lifetime-seconds` parameter may not work as expected due to workspace security policies. Tokens typically default to 90 days maximum.
 
 ### Environment Variables Required
 
@@ -88,7 +91,6 @@ databricks-starter/
 ├── requirements.txt              # Python dependencies
 ├── setup_databricks_connect.py  # Connection test script
 ├── setup_env.sh                 # Environment template
-├── setup_env_local.sh           # Local environment (configured)
 ├── .gitignore                   # Git ignore patterns
 ├── config/                      # Configuration files
 ├── notebooks/                   # Databricks notebooks
@@ -105,6 +107,16 @@ databricks-starter/
 3. **Develop locally** using your IDE with full Databricks functionality
 4. **Test your code** before deploying to the workspace
 5. **Use version control** for your development workflow
+
+## 🧪 Testing
+
+The test suite is configured to work with Databricks Connect:
+```bash
+# Run tests (requires Databricks Connect environment variables)
+pytest tests/ -v
+
+# Tests will be skipped if Databricks Connect is not configured
+```
 
 ## Contributing
 

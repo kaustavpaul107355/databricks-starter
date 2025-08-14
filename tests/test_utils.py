@@ -3,17 +3,28 @@ Tests for Databricks utilities.
 """
 
 import pytest
+import os
 from src.databricks_utils import validate_dataframe, add_audit_columns
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 @pytest.fixture
 def spark():
-    """Create a Spark session for testing."""
-    return SparkSession.builder \
-        .appName("TestApp") \
-        .master("local[2]") \
-        .getOrCreate()
+    """Create a Spark session for testing using Databricks Connect."""
+    # Check if we have Databricks Connect environment variables
+    required_vars = ['DATABRICKS_HOST', 'DATABRICKS_CLUSTER_ID', 'DATABRICKS_TOKEN']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        pytest.skip("Databricks Connect environment variables not set. Skipping tests.")
+    
+    try:
+        from databricks.connect import DatabricksSession
+        return DatabricksSession.builder.remote().getOrCreate()
+    except ImportError:
+        pytest.skip("Databricks Connect not available. Skipping tests.")
+    except Exception as e:
+        pytest.skip(f"Failed to create Databricks Connect session: {e}")
 
 @pytest.fixture
 def sample_df(spark):
