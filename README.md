@@ -9,6 +9,7 @@ This repository contains starter code and configurations for Databricks developm
 - Configuration files
 - Utility functions
 - Best practices and examples
+- **Databricks Connect setup for local development**
 
 ## Getting Started
 
@@ -33,17 +34,77 @@ This repository contains starter code and configurations for Databricks developm
 
 3. Configure your Databricks connection (see `config/` directory)
 
+## 🚀 Databricks Connect Setup
+
+This project includes Databricks Connect configuration for local development, allowing you to develop and test your code locally while using your Databricks cluster's compute resources.
+
+### Quick Setup
+
+1. **Set environment variables**:
+   ```bash
+   # Copy the template and configure with your values
+   cp setup_env.sh setup_env_local.sh
+   # Edit setup_env_local.sh with your actual values
+   
+   # Load the environment variables
+   source setup_env_local.sh
+   ```
+
+2. **Test the connection**:
+   ```bash
+   python setup_databricks_connect.py
+   ```
+
+3. **Run local development examples**:
+   ```bash
+   python notebooks/local_development_example.py
+   ```
+
+### Token Management
+
+- **Current token expires**: January 14, 2026 (365 days)
+- **Token type**: Personal Access Token with maximum longevity
+- **Security**: Tokens are stored in environment variables, not in code
+
+To create a new long-lived token:
+```bash
+databricks tokens create --comment "Long-lived Databricks Connect Token" --lifetime-seconds 31536000 --profile your-profile
+```
+
+### Environment Variables Required
+
+```bash
+export DATABRICKS_HOST="https://your-workspace.cloud.databricks.com"
+export DATABRICKS_CLUSTER_ID="your-cluster-id"
+export DATABRICKS_TOKEN="your-personal-access-token"
+export DATABRICKS_ORG_ID="your-org-id"
+```
+
 ## Project Structure
 
 ```
 databricks-starter/
-├── notebooks/          # Databricks notebooks
-├── src/               # Source code
-├── config/            # Configuration files
-├── tests/             # Test files
-├── requirements.txt   # Python dependencies
-└── README.md         # This file
+├── README.md                     # This file
+├── requirements.txt              # Python dependencies
+├── setup_databricks_connect.py  # Connection test script
+├── setup_env.sh                 # Environment template
+├── setup_env_local.sh           # Local environment (configured)
+├── .gitignore                   # Git ignore patterns
+├── config/                      # Configuration files
+├── notebooks/                   # Databricks notebooks
+│   ├── 01_getting_started.py   # Basic Databricks notebook
+│   └── local_development_example.py # Local dev example
+├── src/                         # Source code
+└── tests/                       # Test files
 ```
+
+## 🔧 Local Development Workflow
+
+1. **Start your Databricks cluster** in the workspace
+2. **Set environment variables** using `setup_env_local.sh`
+3. **Develop locally** using your IDE with full Databricks functionality
+4. **Test your code** before deploying to the workspace
+5. **Use version control** for your development workflow
 
 ## Contributing
 
