@@ -10,6 +10,7 @@ This repository contains starter code and configurations for Databricks developm
 - Utility functions
 - Best practices and examples
 - **Databricks Connect setup for local development**
+- **User folder management and file operations**
 
 ## Getting Started
 
@@ -83,6 +84,52 @@ export DATABRICKS_TOKEN="your-personal-access-token"
 export DATABRICKS_ORG_ID="your-org-id"
 ```
 
+## 📁 User Folder Management
+
+This project includes powerful utilities for managing files and assets in your Databricks user folder:
+
+### Features
+
+- **File Operations**: Create, read, write, and delete files
+- **Multiple Formats**: Support for Parquet, CSV, JSON, and Delta formats
+- **Audit Trail**: Automatic tracking of creation and modification
+- **Batch Operations**: Efficient handling of large datasets
+- **Error Handling**: Robust error handling and logging
+
+### Quick Demo
+
+```bash
+# Run the user folder management demo
+python demo_user_folder.py
+```
+
+### Usage Examples
+
+```python
+from src.user_folder_manager import create_user_folder_manager
+from databricks.connect import DatabricksSession
+
+# Create a Spark session
+spark = DatabricksSession.builder.remote().getOrCreate()
+
+# Initialize user folder manager
+user_manager = create_user_folder_manager(spark)
+
+# List files in your user folder
+files = user_manager.list_files()
+
+# Create test data
+test_data = [("file1", "content1"), ("file2", "content2")]
+user_manager.create_test_data("test.parquet", test_data, ["name", "content"])
+
+# Read files
+df = user_manager.read_file("test.parquet")
+
+# Write in different formats
+user_manager.write_file(df, "output.csv", "csv")
+user_manager.write_file(df, "output.json", "json")
+```
+
 ## Project Structure
 
 ```
@@ -90,13 +137,17 @@ databricks-starter/
 ├── README.md                     # This file
 ├── requirements.txt              # Python dependencies
 ├── setup_databricks_connect.py  # Connection test script
+├── demo_user_folder.py          # User folder management demo
 ├── setup_env.sh                 # Environment template
 ├── .gitignore                   # Git ignore patterns
 ├── config/                      # Configuration files
 ├── notebooks/                   # Databricks notebooks
 │   ├── 01_getting_started.py   # Basic Databricks notebook
-│   └── local_development_example.py # Local dev example
+│   ├── local_development_example.py # Local dev example
+│   └── user_folder_explorer.py # User folder exploration
 ├── src/                         # Source code
+│   ├── databricks_utils.py     # Core utilities
+│   └── user_folder_manager.py  # User folder management
 └── tests/                       # Test files
 ```
 
@@ -107,6 +158,7 @@ databricks-starter/
 3. **Develop locally** using your IDE with full Databricks functionality
 4. **Test your code** before deploying to the workspace
 5. **Use version control** for your development workflow
+6. **Manage user folder assets** programmatically
 
 ## 🧪 Testing
 
@@ -117,6 +169,16 @@ pytest tests/ -v
 
 # Tests will be skipped if Databricks Connect is not configured
 ```
+
+## 🎯 Use Cases
+
+This starter template is perfect for:
+
+- **Data Engineers**: Building ETL pipelines and data transformations
+- **Data Scientists**: Developing ML models and data analysis workflows
+- **Analysts**: Creating data processing scripts and reports
+- **DevOps Engineers**: Automating Databricks operations and deployments
+- **Teams**: Collaborative development with version control and testing
 
 ## Contributing
 
