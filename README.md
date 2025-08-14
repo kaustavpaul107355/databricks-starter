@@ -11,6 +11,7 @@ This repository contains starter code and configurations for Databricks developm
 - Best practices and examples
 - **Databricks Connect setup for local development**
 - **User folder management and file operations**
+- **Simple file browsing tools**
 
 ## Getting Started
 
@@ -130,6 +131,57 @@ user_manager.write_file(df, "output.csv", "csv")
 user_manager.write_file(df, "output.json", "json")
 ```
 
+## 🔍 Simple File Browsing
+
+**Browse your Databricks files directly from Cursor's terminal!**
+
+### Quick Commands
+
+```bash
+# List all your files
+python list_my_files.py
+
+# Search for specific files
+python find_file.py "data"
+python find_file.py "csv"
+```
+
+### What You'll See
+
+```
+🚀 Simple Databricks File Lister
+========================================
+🔄 Connecting to Databricks...
+✅ Connected! Spark version: 3.5.2
+📁 Browsing: /Users/kaustav.paul@databricks.com
+
+📊 Found 2 directories and 5 files
+================================================================================
+
+📁 Directories:
+   📁 datasets/
+   📁 projects/
+
+📄 Files:
+   📄 analysis_results.csv (156 KB)
+   📄 project_data.parquet (2.3 MB)
+   📄 raw_data.delta (45.2 MB)
+
+📈 Summary:
+   📁 Directories: 2
+   📄 Files: 5
+   💾 Total size: 47.7 MB
+
+🎯 Your files are ready to work with!
+```
+
+### Perfect for Daily Use
+
+- **Quick file check**: See what's in your workspace
+- **Find files fast**: Search by name pattern
+- **No complex menus**: Just run and see results
+- **Works from Cursor**: Run directly in your terminal
+
 ## Project Structure
 
 ```
@@ -138,6 +190,8 @@ databricks-starter/
 ├── requirements.txt              # Python dependencies
 ├── setup_databricks_connect.py  # Connection test script
 ├── demo_user_folder.py          # User folder management demo
+├── list_my_files.py             # Simple file lister ✨
+├── find_file.py                 # File search utility ✨
 ├── setup_env.sh                 # Environment template
 ├── .gitignore                   # Git ignore patterns
 ├── config/                      # Configuration files
@@ -155,10 +209,11 @@ databricks-starter/
 
 1. **Start your Databricks cluster** in the workspace
 2. **Set environment variables** using `setup_env_local.sh`
-3. **Develop locally** using your IDE with full Databricks functionality
-4. **Test your code** before deploying to the workspace
-5. **Use version control** for your development workflow
-6. **Manage user folder assets** programmatically
+3. **Browse your files** with `python list_my_files.py`
+4. **Develop locally** using your IDE with full Databricks functionality
+5. **Test your code** before deploying to the workspace
+6. **Use version control** for your development workflow
+7. **Manage user folder assets** programmatically
 
 ## 🧪 Testing
 
