@@ -1,15 +1,17 @@
 # Multi-Agent Supervisor Chat App
 
-A modern Streamlit-based chat application that provides an intuitive interface for querying the Multi-Agent Supervisor (MAS) endpoint using Databricks' MLflow deployment client capabilities.
+A modern Streamlit-based chat application that provides an intuitive interface for querying the Multi-Agent Supervisor (MAS) endpoint using Databricks' MLflow deployment client capabilities. This app follows the official [Databricks app template pattern](https://docs.databricks.com/aws/en/generative-ai/agent-framework/chat-app).
 
 ## 🚀 Features
 
-* **Modern UI**: Beautiful, responsive chat interface with custom styling (following GitHub project pattern)
+* **Modern UI**: Beautiful, responsive chat interface with custom styling
 * **MAS Integration**: Powered by Databricks MLflow model serving endpoints
 * **Real Agent Coordination**: Query and retrieve information from your actual MAS agents
+* **Streaming Support**: Real-time streaming of agent responses with fallback to non-streaming
 * **User Authentication**: Built-in user identification and session management
 * **Real-time Chat**: Interactive conversation flow with message history
 * **Deployment Ready**: Configured for cloud deployment with environment variables
+* **Endpoint Status**: Real-time monitoring of MAS endpoint availability
 
 ## 📋 Prerequisites
 
@@ -17,55 +19,85 @@ A modern Streamlit-based chat application that provides an intuitive interface f
 * Databricks workspace with model serving capabilities
 * Access to MAS endpoint: `mas-6c04fa76-endpoint`
 * MLflow deployment client configured
+* Databricks CLI installed and configured
 
 ## 🛠️ Installation
 
-1. **Clone the repository**  
+### 1. Clone and Setup
+
 ```bash
+# Clone the repository
 git clone <repository-url>  
 cd databricks-app-mas
+
+# Run the setup script
+chmod +x setup_deployment.sh
+./setup_deployment.sh
 ```
 
-2. **Install dependencies**  
+### 2. Configure Environment
+
+Edit the `.env` file with your Databricks configuration:
+
 ```bash
-pip install -r requirements.txt
+# Databricks Workspace Configuration
+DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
+DATABRICKS_TOKEN=your-personal-access-token
+
+# Multi-Agent Supervisor Endpoint Configuration
+SERVING_ENDPOINT=mas-6c04fa76-endpoint
+WORKSPACE_ID=your-workspace-id
 ```
 
-3. **Set up environment variables**  
+### 3. Configure Databricks CLI
+
 ```bash
-export SERVING_ENDPOINT="mas-6c04fa76-endpoint"
-export DATABRICKS_HOST="https://e2-demo-field-eng.cloud.databricks.com"
-export WORKSPACE_ID="1444828305810485"
+databricks configure
 ```
+
+Provide your Databricks host URL and personal access token when prompted.
 
 ## 🚀 Usage
 
 ### Local Development
 
-1. **Start the application**  
+1. **Activate virtual environment**  
+```bash
+source venv/bin/activate
+```
+
+2. **Start the application**  
 ```bash
 streamlit run app.py
 ```
 
-2. **Open your browser**  
+3. **Open your browser**  
 Navigate to `http://localhost:8501`
 
 ### Cloud Deployment
 
-The app is configured for deployment with the following files:
+Deploy the app to Databricks using the deployment script:
 
-* `app.yaml`: Deployment configuration for cloud platforms
-* `requirements.txt`: Python dependencies
-* Environment variables configured for MAS endpoint integration
+```bash
+# Set environment variables
+export SERVING_ENDPOINT="mas-6c04fa76-endpoint"
+export DATABRICKS_HOST="https://your-workspace.cloud.databricks.com"
+
+# Deploy
+chmod +x deploy.sh
+./deploy.sh
+```
 
 ## 🏗️ Architecture
 
 ### Core Components
 
 * **`app.py`**: Main Streamlit application with UI and chat logic
-* **`requirements.txt`**: Python dependencies (Streamlit + MLflow)
-* **`app.yaml`**: Deployment configuration
+* **`requirements.txt`**: Python dependencies (Streamlit + MLflow + Requests)
+* **`app.yaml`**: Deployment configuration for cloud platforms
 * **`databricks.yml`**: Databricks Asset Bundle configuration
+* **`deploy.sh`**: Deployment script following Databricks app template pattern
+* **`setup_deployment.sh`**: Local development setup script
 
 ### Key Features
 
@@ -74,6 +106,8 @@ The app is configured for deployment with the following files:
 * **Responsive Design**: Mobile-friendly interface with custom CSS styling
 * **Error Handling**: Graceful error handling and user feedback
 * **Real MAS Integration**: Uses MLflow deployment client for endpoint calls
+* **Streaming Support**: Real-time response streaming with fallback
+* **Endpoint Monitoring**: Real-time status checking of MAS endpoint
 
 ## 🔧 Configuration
 
@@ -103,6 +137,7 @@ The app requires a Databricks MAS endpoint that supports:
 * **Custom Styling**: Tailored CSS for professional appearance
 * **Message History**: Persistent conversation threads
 * **Agent Status**: Real-time connection status indicators
+* **Streaming Toggle**: Enable/disable real-time response streaming
 
 ## 🔒 Security
 
@@ -125,7 +160,8 @@ response = client.predict(
     inputs={
         "messages": [{"role": "user", "content": user_message}],
         "selected_agents": selected_agents,
-        "workspace_id": WORKSPACE_ID
+        "max_tokens": 1000,
+        "stream": True  # Enable streaming
     }
 )
 ```
@@ -135,20 +171,33 @@ response = client.predict(
 ### Local Development
 
 ```bash
+source venv/bin/activate
 streamlit run app.py
 ```
-
-### Cloud Deployment
-
-1. Configure your cloud platform (Google Cloud, AWS, Azure)
-2. Set environment variables
-3. Deploy using the provided `app.yaml` configuration
 
 ### Databricks Apps Deployment
 
 ```bash
-databricks bundle deploy
-databricks apps deploy multi-agent-supervisor-app --source-code-path "/path/to/bundle" --mode SNAPSHOT
+# Deploy using the provided script
+./deploy.sh
+
+# Or manually using Databricks CLI
+databricks apps create --json '{
+  "name": "multi-agent-supervisor-chat",
+  "resources": [
+    {
+      "name": "serving-endpoint",
+      "serving_endpoint": {
+        "name": "your-mas-endpoint",
+        "permission": "CAN_QUERY"
+      }
+    }
+  ]
+}'
+
+# Sync and deploy
+databricks sync . "/Users/your-username/multi-agent-supervisor-chat"
+databricks apps deploy multi-agent-supervisor-chat --source-code-path "/Workspace/Users/your-username/multi-agent-supervisor-chat"
 ```
 
 ## 🤝 Contributing
@@ -171,15 +220,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For support and questions:
 
-* Check the Databricks documentation for model serving
-* Review the Streamlit documentation for UI components
+* Check the [Databricks documentation](https://docs.databricks.com/aws/en/generative-ai/agent-framework/chat-app) for model serving
+* Review the [Streamlit documentation](https://docs.streamlit.io/) for UI components
 * Open an issue in the repository
+
+## 🔗 Related Projects
+
+* [Databricks App Templates](https://github.com/databricks/app-templates/tree/main/e2e-chatbot-app) - Official app templates
+* [Databricks Multi-Agent Supervisor](https://docs.databricks.com/aws/en/generative-ai/agent-bricks/multi-agent-supervisor) - Official documentation
+* [Databricks Apps](https://docs.databricks.com/aws/en/generative-ai/agent-framework/chat-app) - App framework documentation
 
 ---
 
 **Note**: This application requires proper configuration of your MAS endpoint and MLflow deployment client. Ensure all prerequisites are met before deployment.
-
-## 🔗 Related Projects
-
-* [Simple RAG Chatbot](https://github.com/kaustavpaul107355/simple-rag-chatbot) - Working pattern reference
-* [Databricks Multi-Agent Supervisor](https://docs.databricks.com/en/machine-learning/llm/multi-agent-supervisor.html) - Official documentation

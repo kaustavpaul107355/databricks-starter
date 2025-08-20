@@ -1,12 +1,26 @@
 #!/usr/bin/env python3
 """
-Simple File Lister for Databricks User Folder
+Simple Databricks File Lister
+=============================
 
-A clean, simple way to see your files in the workspace.
+A simple utility to list files in your Databricks user folder.
+Perfect for quick file browsing from your terminal.
 """
 
 import os
 import sys
+from pathlib import Path
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / '.env'
+    load_dotenv(env_path)
+except ImportError:
+    pass  # Continue without dotenv if not available
+except Exception:
+    pass  # Continue if .env loading fails
+
 from databricks.connect import DatabricksSession
 from src.user_folder_manager import create_user_folder_manager
 

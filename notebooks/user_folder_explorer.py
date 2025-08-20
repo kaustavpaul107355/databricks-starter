@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 User Folder Explorer
 This notebook demonstrates how to interact with your user folder in the Databricks workspace

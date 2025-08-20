@@ -5,6 +5,20 @@ Setup and test Databricks Connect connection
 
 import os
 import sys
+from pathlib import Path
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # Load .env file from the same directory as this script
+    env_path = Path(__file__).parent / '.env'
+    load_dotenv(env_path)
+    print(f"✅ Loaded environment from: {env_path}")
+except ImportError:
+    print("⚠️  python-dotenv not installed, using system environment variables")
+except Exception as e:
+    print(f"⚠️  Could not load .env file: {e}")
+
 from databricks.connect import DatabricksSession
 
 def setup_databricks_connect():

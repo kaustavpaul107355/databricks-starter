@@ -1,144 +1,131 @@
 #!/bin/bash
 
-# Multi-Agent Supervisor Databricks App Setup Script
-# This script helps you configure the deployment environment
+# Multi-Agent Supervisor Chat App Setup Script
+# Following the official Databricks app template pattern
 
 set -e
 
-echo "🔧 Multi-Agent Supervisor Databricks App Setup"
-echo "=============================================="
+echo "🔧 Setting up Multi-Agent Supervisor Chat App..."
+echo "================================================"
 
-# Check if .env file exists
-if [ -f ".env" ]; then
-    echo "📁 Found existing .env file"
-    echo "   Current configuration:"
-    cat .env | grep -v "^#" | grep -v "^$" || echo "   (No configuration found)"
-    echo ""
-    
-    read -p "Do you want to overwrite the existing .env file? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "✅ Keeping existing .env file"
-        exit 0
-    fi
-fi
-
-echo "📝 Setting up environment configuration..."
-
-# Get Databricks workspace URL
-echo ""
-echo "🌐 Databricks Workspace Configuration"
-echo "------------------------------------"
-
-read -p "Enter your Databricks workspace URL (e.g., https://your-workspace.cloud.databricks.com): " DATABRICKS_HOST
-
-if [ -z "$DATABRICKS_HOST" ]; then
-    echo "❌ Databricks workspace URL is required"
+# Check if Python 3.9+ is available
+echo "🐍 Checking Python version..."
+PYTHON_VERSION=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
+if [ -z "$PYTHON_VERSION" ]; then
+    echo "❌ Python 3 is not installed. Please install Python 3.9 or higher."
     exit 1
 fi
 
-# Validate URL format
-if [[ ! "$DATABRICKS_HOST" =~ ^https://.*\.cloud\.databricks\.com$ ]]; then
-    echo "⚠️  Warning: URL doesn't match expected format (https://*.cloud.databricks.com)"
-    read -p "Continue anyway? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-fi
+PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
+PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
 
-# Get Personal Access Token
-echo ""
-echo "🔑 Personal Access Token"
-echo "------------------------"
-
-read -p "Enter your Databricks Personal Access Token: " DATABRICKS_TOKEN
-
-if [ -z "$DATABRICKS_TOKEN" ]; then
-    echo "❌ Personal Access Token is required"
-    echo ""
-    echo "💡 To create a token:"
-    echo "   1. Go to your Databricks workspace"
-    echo "   2. Click on your user icon → User Settings"
-    echo "   3. Go to Access Tokens → Generate New Token"
-    echo "   4. Copy the token and paste it here"
+if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 9 ]); then
+    echo "❌ Python $PYTHON_VERSION is not supported. Please install Python 3.9 or higher."
     exit 1
 fi
 
-# Get Multi-Agent Supervisor endpoint name
-echo ""
-echo "🤖 Multi-Agent Supervisor Endpoint"
-echo "----------------------------------"
+echo "✅ Python $PYTHON_VERSION is supported"
 
-read -p "Enter your Multi-Agent Supervisor endpoint name (default: mas-6c04fa76-endpoint): " MAS_ENDPOINT_NAME
+# Check if pip is available
+echo "📦 Checking pip..."
+if ! command -v pip3 &> /dev/null; then
+    echo "❌ pip3 is not installed. Please install pip3."
+    exit 1
+fi
+echo "✅ pip3 is available"
 
-if [ -z "$MAS_ENDPOINT_NAME" ]; then
-    MAS_ENDPOINT_NAME="mas-6c04fa76-endpoint"
+# Check if virtual environment exists
+if [ ! -d "venv" ]; then
+    echo "🔧 Creating virtual environment..."
+    python3 -m venv venv
+    echo "✅ Virtual environment created"
+else
+    echo "✅ Virtual environment already exists"
 fi
 
-# Create .env file
-echo ""
-echo "📝 Creating .env file..."
+# Activate virtual environment
+echo "🔌 Activating virtual environment..."
+source venv/bin/activate
+echo "✅ Virtual environment activated"
 
-cat > .env << EOF
-# Multi-Agent Supervisor Databricks App Environment Configuration
-# Generated on $(date)
+# Install dependencies
+echo "📥 Installing Python dependencies..."
+pip install --upgrade pip
+pip install -r requirements.txt
+echo "✅ Dependencies installed"
+
+# Check if Databricks CLI is installed
+echo "🔍 Checking Databricks CLI..."
+if ! command -v databricks &> /dev/null; then
+    echo "📦 Installing Databricks CLI..."
+    pip install databricks-cli
+    echo "✅ Databricks CLI installed"
+else
+    echo "✅ Databricks CLI is already installed"
+fi
+
+# Check if jq is installed (for JSON parsing)
+echo "🔍 Checking jq..."
+if ! command -v jq &> /dev/null; then
+    echo "⚠️  jq is not installed. It's recommended for JSON parsing in deployment scripts."
+    echo "   On macOS: brew install jq"
+    echo "   On Ubuntu/Debian: sudo apt-get install jq"
+    echo "   On CentOS/RHEL: sudo yum install jq"
+else
+    echo "✅ jq is available"
+fi
+
+# Create .env file if it doesn't exist
+if [ ! -f ".env" ]; then
+    echo "📝 Creating .env file..."
+    cat > .env << EOF
+# Multi-Agent Supervisor Chat App Environment Configuration
+# Copy this file to .env and fill in your actual values
 
 # Databricks Workspace Configuration
-DATABRICKS_HOST=$DATABRICKS_HOST
-DATABRICKS_TOKEN=$DATABRICKS_TOKEN
+DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
+DATABRICKS_TOKEN=your-personal-access-token
 
 # Multi-Agent Supervisor Endpoint Configuration
-MAS_ENDPOINT_NAME=$MAS_ENDPOINT_NAME
+SERVING_ENDPOINT=mas-6c04fa76-endpoint
+WORKSPACE_ID=your-workspace-id
+
+# Optional: Additional Configuration
+# DATABRICKS_CLUSTER_ID=your-cluster-id
+# DATABRICKS_ORG_ID=your-org-id
 EOF
-
-echo "✅ .env file created successfully!"
-
-# Test configuration
-echo ""
-echo "🧪 Testing configuration..."
-
-# Load environment variables
-export $(cat .env | grep -v '^#' | xargs)
-
-# Test Databricks CLI connection
-echo "   Testing Databricks CLI connection..."
-if databricks auth describe --host "$DATABRICKS_HOST" --token "$DATABRICKS_TOKEN" > /dev/null 2>&1; then
-    echo "   ✅ Databricks CLI connection successful"
+    echo "✅ .env file created"
+    echo "⚠️  Please edit .env file with your actual Databricks configuration"
 else
-    echo "   ❌ Databricks CLI connection failed"
-    echo "   Please check your workspace URL and token"
-    exit 1
+    echo "✅ .env file already exists"
 fi
 
-# Validate bundle configuration
-echo "   Validating bundle configuration..."
-if databricks bundle validate > /dev/null 2>&1; then
-    echo "   ✅ Bundle configuration is valid"
+# Check Databricks CLI configuration
+echo "🔐 Checking Databricks CLI configuration..."
+if ! databricks current-user me &> /dev/null; then
+    echo "⚠️  Databricks CLI is not configured. Please run:"
+    echo "   databricks configure"
+    echo ""
+    echo "You'll need:"
+    echo "   - Databricks host URL (e.g., https://your-workspace.cloud.databricks.com)"
+    echo "   - Personal access token"
 else
-    echo "   ❌ Bundle validation failed"
-    echo "   Please check your databricks.yml file"
-    exit 1
+    echo "✅ Databricks CLI is configured"
+    echo "👤 Current user: $(databricks current-user me | jq -r .userName)"
 fi
 
 echo ""
 echo "🎉 Setup completed successfully!"
-echo "================================"
 echo ""
-echo "📁 Configuration files created:"
-echo "   - .env (environment variables)"
-echo "   - databricks.yml (bundle configuration)"
+echo "📋 Next steps:"
+echo "1. Edit .env file with your Databricks configuration"
+echo "2. Configure Databricks CLI if not already done: databricks configure"
+echo "3. Test locally: streamlit run app.py"
+echo "4. Deploy to Databricks: ./deploy.sh"
 echo ""
-echo "🚀 Ready to deploy! Run:"
-echo "   ./deploy.sh"
-echo ""
-echo "💡 Next steps:"
-echo "   1. Ensure Multi-Agent Supervisor is configured in your workspace"
-echo "   2. Set up agent endpoints and Genie spaces"
-echo "   3. Grant proper permissions to users"
-echo "   4. Deploy the app using ./deploy.sh"
-echo ""
-echo "📚 Documentation:"
-echo "   - README.md for detailed setup instructions"
+echo "🔗 Useful links:"
+echo "   - Databricks Apps: https://docs.databricks.com/aws/en/generative-ai/agent-framework/chat-app"
 echo "   - Multi-Agent Supervisor: https://docs.databricks.com/aws/en/generative-ai/agent-bricks/multi-agent-supervisor"
-echo "   - Databricks Apps: https://learn.microsoft.com/en-us/azure/databricks/dev-tools/databricks-apps/"
+echo "   - Databricks CLI: https://docs.databricks.com/dev-tools/cli/index.html"
+echo ""
+echo "🚀 Happy coding!"
