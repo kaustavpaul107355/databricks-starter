@@ -1,0 +1,23 @@
+runtime: python39
+command: [
+  "streamlit", 
+  "run",
+  "app.py"
+]
+
+env:
+  - name: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+    value: "false"
+  - name: "SERVING_ENDPOINT"
+    value: "mas-6c04fa76-endpoint"
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 5
+  target_cpu_utilization: 0.6
+  target_throughput_utilization: 0.6
+
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
