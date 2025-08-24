@@ -1,0 +1,10 @@
+runtime: python38
+command: [
+  "python",
+  "-u",
+  "app.py"
+]
+
+resources:
+  cpu: 1
+  memory_gb: 2
