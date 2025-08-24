@@ -224,9 +224,93 @@ document.addEventListener('submit', function(e) {
 // Check every 100ms
 setInterval(checkForLoading, 100);
 
+// AGGRESSIVE BLUE ARC ELIMINATION
+function eliminateBlueArcs() {
+    // Target all possible spinner selectors
+    const spinnerSelectors = [
+        '[data-testid="stSpinner"]',
+        '.stSpinner',
+        'svg[data-testid="stSpinner"]',
+        'circle[data-testid="stSpinner"]',
+        '.stProgress',
+        '[data-testid="stProgress"]',
+        '.stChatMessage [data-testid="stSpinner"]',
+        'div[data-testid="stChatMessage"] [data-testid="stSpinner"]',
+        '*[class*="spinner"]',
+        '*[class*="loading"]',
+        '*[data-testid*="spinner"]',
+        '*[data-testid*="loading"]'
+    ];
+    
+    let eliminated = 0;
+    spinnerSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+            if (el && el.style.display !== 'none') {
+                el.style.display = 'none';
+                el.style.visibility = 'hidden';
+                el.style.opacity = '0';
+                el.style.position = 'absolute';
+                el.style.left = '-9999px';
+                el.style.top = '-9999px';
+                el.style.zIndex = '-9999';
+                eliminated++;
+            }
+        });
+    });
+    
+    if (eliminated > 0) {
+        console.log(`🎯 Eliminated ${eliminated} blue arcs`);
+    }
+}
+
+// Run elimination every 50ms for aggressive removal
+setInterval(eliminateBlueArcs, 50);
+
+// Also run on DOM mutations
+const arcObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+            // Check if any new spinners were added
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Element node
+                    // Check the node itself
+                    if (node.matches && (
+                        node.matches('[data-testid="stSpinner"]') ||
+                        node.matches('.stSpinner') ||
+                        node.matches('*[class*="spinner"]')
+                    )) {
+                        node.style.display = 'none';
+                        console.log('🎯 Intercepted new spinner');
+                    }
+                    
+                    // Check children
+                    const childSpinners = node.querySelectorAll && node.querySelectorAll('[data-testid="stSpinner"], .stSpinner, *[class*="spinner"]');
+                    if (childSpinners) {
+                        childSpinners.forEach(spinner => {
+                            spinner.style.display = 'none';
+                            console.log('🎯 Intercepted child spinner');
+                        });
+                    }
+                }
+            });
+        }
+    });
+});
+
+// Start aggressive observation
+if (document.body) {
+    arcObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'data-testid', 'style']
+    });
+}
+
 // Start with loader visible for testing
 showLoader();
-console.log('🎯 Custom loader initialized and visible');
+console.log('🎯 Custom loader initialized with aggressive blue arc elimination');
 </script>
 """, height=0)
 
@@ -368,51 +452,65 @@ st.markdown("""
         100% { opacity: 1; }
     }
     
-    /* AGGRESSIVE LOADING INDICATOR HIDING */
-    /* Hide ALL Streamlit loading elements */
-    .stSpinner, .stSpinner > div, .stSpinner > div > div,
-    .stProgress, .stProgress > div, .stProgress > div > div,
-    [data-testid="stSpinner"], [data-testid="stProgress"],
+    /* NUCLEAR OPTION - ELIMINATE ALL BLUE ARCS */
+    /* Target ALL possible spinner elements */
+    .stSpinner, .stSpinner *, 
+    .stProgress, .stProgress *,
+    [data-testid="stSpinner"], [data-testid="stSpinner"] *,
+    [data-testid="stProgress"], [data-testid="stProgress"] *,
     [data-testid="stStatusWidget"], [data-testid="stStatus"],
     .stAlert[data-baseweb="notification"],
     .stToast, [data-testid="stToast"],
+    
+    /* Target specific chat message loading indicators */
+    .stChatMessage .stSpinner,
+    .stChatMessage [data-testid="stSpinner"],
+    div[data-testid="stChatMessage"] .stSpinner,
+    div[data-testid="stChatMessage"] [data-testid="stSpinner"],
+    
+    /* Target container-level spinners */
     .element-container .stSpinner,
+    .element-container [data-testid="stSpinner"],
     .stApp .stSpinner,
+    .stApp [data-testid="stSpinner"],
+    .main .stSpinner,
+    .main [data-testid="stSpinner"],
+    .block-container .stSpinner,
+    .block-container [data-testid="stSpinner"],
+    
+    /* Target specific app areas */
     div[data-testid="stDecoration"],
     .stApp > div[data-testid="stDecoration"],
-    .stApp .stProgress,
-    .main .stSpinner,
-    .main .stProgress {
+    .stApp > header + div .stSpinner,
+    .stApp > header + div [data-testid="stSpinner"],
+    .stApp > div > div > div [data-testid="stSpinner"],
+    .stApp header ~ div [data-testid="stSpinner"],
+    .stApp [data-testid="stToolbar"] ~ div [data-testid="stSpinner"],
+    .stApp > div:first-child [data-testid="stSpinner"],
+    div[data-testid="stAppViewContainer"] [data-testid="stSpinner"],
+    section[data-testid="stSidebar"] ~ div [data-testid="stSpinner"],
+    
+    /* Target SVG spinners specifically */
+    svg[data-testid="stSpinner"],
+    svg.stSpinner,
+    circle[data-testid="stSpinner"],
+    
+    /* Target any remaining loading elements */
+    .stStatus, .stStatusWidget, .stAlert[kind="info"],
+    
+    /* Catch-all for any spinner-like elements */
+    *[class*="spinner"], *[class*="loading"], *[class*="progress"],
+    *[data-testid*="spinner"], *[data-testid*="loading"], *[data-testid*="progress"] {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
-    }
-    
-    /* Hide loading overlays and status widgets */
-    .stStatus, .stStatusWidget, .stAlert[kind="info"] {
-        display: none !important;
-    }
-    
-    /* Hide any remaining loading arcs */
-    svg[data-testid="stSpinner"] {
-        display: none !important;
-    }
-    
-    /* REPLACE STREAMLIT LOADING WITH CUSTOM DESIGN */
-    /* Hide default Streamlit loading indicators */
-    .stApp > header + div > div > div > div[data-testid="stSpinner"],
-    .stApp > div > div > div[data-testid="stSpinner"],
-    .stApp header ~ div [data-testid="stSpinner"],
-    .stApp [data-testid="stToolbar"] ~ div [data-testid="stSpinner"],
-    .stApp > div:first-child [data-testid="stSpinner"],
-    div[data-testid="stAppViewContainer"] [data-testid="stSpinner"],
-    section[data-testid="stSidebar"] ~ div [data-testid="stSpinner"],
-    .main [data-testid="stSpinner"],
-    .block-container [data-testid="stSpinner"] {
-        display: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+        z-index: -9999 !important;
     }
     
     /* Custom App Loading Overlay - Prominent Design */
@@ -945,7 +1043,7 @@ chat_container = st.container()
 with chat_container:
     # Render chat history with enhanced styling and icons
     if st.session_state.history:
-for i, element in enumerate(st.session_state.history):
+        for i, element in enumerate(st.session_state.history):
             # Add enhanced message container with animations
             with st.container():
                 st.markdown(f"""
@@ -959,7 +1057,7 @@ for i, element in enumerate(st.session_state.history):
                 ">
                 """, unsafe_allow_html=True)
                 
-    element.render(i)
+                element.render(i)
                 
                 st.markdown("</div>", unsafe_allow_html=True)
             
@@ -982,198 +1080,198 @@ def query_endpoint_and_render(task_type, input_messages):
 
 def query_chat_completions_endpoint_and_render(input_messages):
     """Handle ChatCompletions streaming format."""
-        accumulated_content = ""
-        request_id = None
-        
-        try:
-            for chunk in query_endpoint_stream(
-                endpoint_name=SERVING_ENDPOINT,
-                messages=input_messages,
-                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-            ):
-                if "choices" in chunk and chunk["choices"]:
-                    delta = chunk["choices"][0].get("delta", {})
-                    content = delta.get("content", "")
-                    if content:
-                        accumulated_content += content
-                
-                if "databricks_output" in chunk:
-                    req_id = chunk["databricks_output"].get("databricks_request_id")
-                    if req_id:
-                        request_id = req_id
+    accumulated_content = ""
+    request_id = None
+    
+    try:
+        for chunk in query_endpoint_stream(
+            endpoint_name=SERVING_ENDPOINT,
+            messages=input_messages,
+            return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+        ):
+            if "choices" in chunk and chunk["choices"]:
+                delta = chunk["choices"][0].get("delta", {})
+                content = delta.get("content", "")
+                if content:
+                    accumulated_content += content
             
-            return AssistantResponse(
-                messages=[{"role": "assistant", "content": accumulated_content}],
-                request_id=request_id
-            )
-        except Exception:
-            messages, request_id = query_endpoint(
-                endpoint_name=SERVING_ENDPOINT,
-                messages=input_messages,
-                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-            )
-            return AssistantResponse(messages=messages, request_id=request_id)
+            if "databricks_output" in chunk:
+                req_id = chunk["databricks_output"].get("databricks_request_id")
+                if req_id:
+                    request_id = req_id
+        
+        return AssistantResponse(
+            messages=[{"role": "assistant", "content": accumulated_content}],
+            request_id=request_id
+        )
+    except Exception:
+        messages, request_id = query_endpoint(
+            endpoint_name=SERVING_ENDPOINT,
+            messages=input_messages,
+            return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+        )
+        return AssistantResponse(messages=messages, request_id=request_id)
 
 
 def query_chat_agent_endpoint_and_render(input_messages):
     """Handle ChatAgent streaming format."""
     from mlflow.types.agent import ChatAgentChunk
-        
-        message_buffers = OrderedDict()
-        request_id = None
-        
-        try:
-            for raw_chunk in query_endpoint_stream(
-                endpoint_name=SERVING_ENDPOINT,
-                messages=input_messages,
-                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-            ):
-                chunk = ChatAgentChunk.model_validate(raw_chunk)
-                delta = chunk.delta
-                message_id = delta.id
+    
+    message_buffers = OrderedDict()
+    request_id = None
+    
+    try:
+        for raw_chunk in query_endpoint_stream(
+            endpoint_name=SERVING_ENDPOINT,
+            messages=input_messages,
+            return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+        ):
+            chunk = ChatAgentChunk.model_validate(raw_chunk)
+            delta = chunk.delta
+            message_id = delta.id
 
-                req_id = raw_chunk.get("databricks_output", {}).get("databricks_request_id")
-                if req_id:
-                    request_id = req_id
-                if message_id not in message_buffers:
-                    message_buffers[message_id] = {
-                        "chunks": [],
-                    }
-                message_buffers[message_id]["chunks"].append(chunk)
-            
-            messages = []
-            for msg_id, msg_info in message_buffers.items():
-                messages.append(reduce_chat_agent_chunks(msg_info["chunks"]))
-            
-            return AssistantResponse(
-                messages=[message.model_dump_compat(exclude_none=True) for message in messages],
-                request_id=request_id
-            )
-        except Exception:
-            messages, request_id = query_endpoint(
-                endpoint_name=SERVING_ENDPOINT,
-                messages=input_messages,
-                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-            )
-            return AssistantResponse(messages=messages, request_id=request_id)
+            req_id = raw_chunk.get("databricks_output", {}).get("databricks_request_id")
+            if req_id:
+                request_id = req_id
+            if message_id not in message_buffers:
+                message_buffers[message_id] = {
+                    "chunks": [],
+                }
+            message_buffers[message_id]["chunks"].append(chunk)
+        
+        messages = []
+        for msg_id, msg_info in message_buffers.items():
+            messages.append(reduce_chat_agent_chunks(msg_info["chunks"]))
+        
+        return AssistantResponse(
+            messages=[message.model_dump_compat(exclude_none=True) for message in messages],
+            request_id=request_id
+        )
+    except Exception:
+        messages, request_id = query_endpoint(
+            endpoint_name=SERVING_ENDPOINT,
+            messages=input_messages,
+            return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+        )
+        return AssistantResponse(messages=messages, request_id=request_id)
 
 
 def query_responses_endpoint_and_render(input_messages):
     """Handle ResponsesAgent streaming format using MLflow types."""
     from mlflow.types.responses import ResponsesAgentStreamEvent
-        
-        # Track all the messages that need to be rendered in order
-        all_messages = []
-        request_id = None
+    
+    # Track all the messages that need to be rendered in order
+    all_messages = []
+    request_id = None
 
-        try:
-            for raw_event in query_endpoint_stream(
-                endpoint_name=SERVING_ENDPOINT,
-                messages=input_messages,
-                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-            ):
-                # Extract databricks_output for request_id
-                if "databricks_output" in raw_event:
-                    req_id = raw_event["databricks_output"].get("databricks_request_id")
-                    if req_id:
-                        request_id = req_id
+    try:
+        for raw_event in query_endpoint_stream(
+            endpoint_name=SERVING_ENDPOINT,
+            messages=input_messages,
+            return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+        ):
+            # Extract databricks_output for request_id
+            if "databricks_output" in raw_event:
+                req_id = raw_event["databricks_output"].get("databricks_request_id")
+                if req_id:
+                    request_id = req_id
+            
+            # Parse using MLflow streaming event types, similar to ChatAgentChunk
+            if "type" in raw_event:
+                event = ResponsesAgentStreamEvent.model_validate(raw_event)
                 
-                # Parse using MLflow streaming event types, similar to ChatAgentChunk
-                if "type" in raw_event:
-                    event = ResponsesAgentStreamEvent.model_validate(raw_event)
+                if hasattr(event, 'item') and event.item:
+                    item = event.item  # This is a dict, not a parsed object
                     
-                    if hasattr(event, 'item') and event.item:
-                        item = event.item  # This is a dict, not a parsed object
+                    if item.get("type") == "message":
+                        # Extract text content from message if present
+                        content_parts = item.get("content", [])
+                        for content_part in content_parts:
+                            if content_part.get("type") == "output_text":
+                                text = content_part.get("text", "")
+                                if text:
+                                    all_messages.append({
+                                        "role": "assistant",
+                                        "content": text
+                                    })
                         
-                        if item.get("type") == "message":
-                            # Extract text content from message if present
-                            content_parts = item.get("content", [])
-                            for content_part in content_parts:
-                                if content_part.get("type") == "output_text":
-                                    text = content_part.get("text", "")
-                                    if text:
-                                        all_messages.append({
-                                            "role": "assistant",
-                                            "content": text
-                                        })
-                            
-                        elif item.get("type") == "function_call":
-                            # Tool call
-                            call_id = item.get("call_id")
-                            function_name = item.get("name")
-                            arguments = item.get("arguments", "")
-                            
-                            # Add to messages for history
-                            all_messages.append({
-                                "role": "assistant",
-                                "content": "",
-                                "tool_calls": [{
-                                    "id": call_id,
-                                    "type": "function",
-                                    "function": {
-                                        "name": function_name,
-                                        "arguments": arguments
+                    elif item.get("type") == "function_call":
+                        # Tool call
+                        call_id = item.get("call_id")
+                        function_name = item.get("name")
+                        arguments = item.get("arguments", "")
+                        
+                        # Add to messages for history
+                        all_messages.append({
+                            "role": "assistant",
+                            "content": "",
+                            "tool_calls": [{
+                                "id": call_id,
+                                "type": "function",
+                                "function": {
+                                    "name": function_name,
+                                    "arguments": arguments
+                                }
+                            }]
+                        })
+                        
+                    elif item.get("type") == "function_call_output":
+                        # Tool call output/result
+                        call_id = item.get("call_id")
+                        output = item.get("output", "")
+                        
+                        # Add to messages for history
+                        all_messages.append({
+                            "role": "tool",
+                            "content": output,
+                            "tool_call_id": call_id
+                        })
+            
+            # Handle additional event types that contain response content
+            elif raw_event.get("type") == "response.output_text.delta":
+                # This contains the actual response text being streamed
+                delta_text = raw_event.get("delta", "")
+                if delta_text:
+                    # Find or create the current assistant message
+                    current_assistant_msg = None
+                    for msg in all_messages:
+                        if msg.get("role") == "assistant" and not msg.get("tool_calls"):
+                            current_assistant_msg = msg
+                            break
+                    
+                    if not current_assistant_msg:
+                        current_assistant_msg = {
+                            "role": "assistant",
+                            "content": ""
+                        }
+                        all_messages.append(current_assistant_msg)
+                    
+                    current_assistant_msg["content"] += delta_text
+            
+            elif raw_event.get("type") == "response.output_item.done":
+                # This contains the complete final message
+                if "item" in raw_event:
+                    item = raw_event["item"]
+                    if item.get("type") == "message":
+                        content_parts = item.get("content", [])
+                        for content_part in content_parts:
+                            if content_part.get("type") == "output_text":
+                                text = content_part.get("text", "")
+                                if text:
+                                    # Update or add the final message
+                                    final_message = {
+                                        "role": "assistant",
+                                        "content": text
                                     }
-                                }]
-                            })
-                            
-                        elif item.get("type") == "function_call_output":
-                            # Tool call output/result
-                            call_id = item.get("call_id")
-                            output = item.get("output", "")
-                            
-                            # Add to messages for history
-                            all_messages.append({
-                                "role": "tool",
-                                "content": output,
-                                "tool_call_id": call_id
-                            })
-                
-                # Handle additional event types that contain response content
-                elif raw_event.get("type") == "response.output_text.delta":
-                    # This contains the actual response text being streamed
-                    delta_text = raw_event.get("delta", "")
-                    if delta_text:
-                        # Find or create the current assistant message
-                        current_assistant_msg = None
-                        for msg in all_messages:
-                            if msg.get("role") == "assistant" and not msg.get("tool_calls"):
-                                current_assistant_msg = msg
-                                break
-                        
-                        if not current_assistant_msg:
-                            current_assistant_msg = {
-                                "role": "assistant",
-                                "content": ""
-                            }
-                            all_messages.append(current_assistant_msg)
-                        
-                        current_assistant_msg["content"] += delta_text
-                
-                elif raw_event.get("type") == "response.output_item.done":
-                    # This contains the complete final message
-                    if "item" in raw_event:
-                        item = raw_event["item"]
-                        if item.get("type") == "message":
-                            content_parts = item.get("content", [])
-                            for content_part in content_parts:
-                                if content_part.get("type") == "output_text":
-                                    text = content_part.get("text", "")
-                                    if text:
-                                        # Update or add the final message
-                                        final_message = {
-                                            "role": "assistant",
-                                            "content": text
-                                        }
-                                        
-                                        # Replace any existing assistant message without tool calls
-                                        for i, msg in enumerate(all_messages):
-                                            if msg.get("role") == "assistant" and not msg.get("tool_calls"):
-                                                all_messages[i] = final_message
-                                                break
-                                        else:
-                                            all_messages.append(final_message)
-                
+                                    
+                                    # Replace any existing assistant message without tool calls
+                                    for i, msg in enumerate(all_messages):
+                                        if msg.get("role") == "assistant" and not msg.get("tool_calls"):
+                                            all_messages[i] = final_message
+                                            break
+                                    else:
+                                        all_messages.append(final_message)
+            
             elif raw_event.get("type") == "error":
                 # Handle error events from the endpoint
                 error_msg = {
@@ -1184,7 +1282,7 @@ def query_responses_endpoint_and_render(input_messages):
                 }
                 all_messages.append(error_msg)
 
-            return AssistantResponse(messages=all_messages, request_id=request_id)
+        return AssistantResponse(messages=all_messages, request_id=request_id)
         
     except Exception as e:
         # Check if we got any error events during streaming
@@ -1197,12 +1295,12 @@ def query_responses_endpoint_and_render(input_messages):
         # Only fall back to non-streaming if we don't have any messages yet
         if not all_messages:
             try:
-            messages, request_id = query_endpoint(
-                endpoint_name=SERVING_ENDPOINT,
-                messages=input_messages,
-                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-            )
-            return AssistantResponse(messages=messages, request_id=request_id)
+                messages, request_id = query_endpoint(
+                    endpoint_name=SERVING_ENDPOINT,
+                    messages=input_messages,
+                    return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+                )
+                return AssistantResponse(messages=messages, request_id=request_id)
             except Exception as fallback_error:
                 error_text = error_message or str(fallback_error)
                 return AssistantResponse(
@@ -1238,7 +1336,7 @@ if prompt:
             backdrop-filter: blur(5px);
         ">
         """, unsafe_allow_html=True)
-    user_msg.render(len(st.session_state.history) - 1)
+        user_msg.render(len(st.session_state.history) - 1)
         st.markdown("</div>", unsafe_allow_html=True)
     
     # Show professional thinking animation
@@ -1299,7 +1397,7 @@ if prompt:
     
     # Add assistant response to history
     if assistant_response:
-    st.session_state.history.append(assistant_response)
+        st.session_state.history.append(assistant_response)
         
         # Show assistant response immediately
         with st.container():
