@@ -829,22 +829,30 @@ st.markdown("""
     box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
     text-align: center;
 ">
-    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">🎯</div>
+    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📈</div>
     <div style="
         font-size: 1.2rem; 
         font-weight: 700; 
         color: white; 
         margin-bottom: 0.8rem; 
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    ">Multi-Agent Supervisor Hub</div>
+    ">S&P 500</div>
     <div style="
-        font-size: 0.9rem; 
+        font-size: 1.0rem; 
+        font-weight: 600; 
+        color: rgba(255, 255, 255, 0.95); 
+        margin-bottom: 0.6rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    ">The Gauge of the U.S. Large-Cap Market</div>
+    <div style="
+        font-size: 0.85rem; 
         color: rgba(255, 255, 255, 0.9); 
-        line-height: 1.4; 
-        max-width: 350px; 
+        line-height: 1.5; 
+        max-width: 400px; 
         margin: 0 auto;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    ">Central orchestration and coordination center for intelligent agent interactions and decision synthesis</div>
+        text-align: justify;
+    ">The S&P 500 is widely regarded as the best single gauge of U.S. large-cap equities. The index includes 500 leading companies spanning all sectors of the U.S. stock market. It covers approximately 80% of the U.S. equity market capitalization and over 50% of the global equity market.</div>
 </div>
 """, unsafe_allow_html=True)
 
