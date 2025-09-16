@@ -1159,119 +1159,119 @@ def query_chat_agent_endpoint_and_render(input_messages):
 def query_responses_endpoint_and_render(input_messages):
     """Handle ResponsesAgent streaming format using MLflow types."""
     from mlflow.types.responses import ResponsesAgentStreamEvent
-    
-    # Track all the messages that need to be rendered in order
-    all_messages = []
-    request_id = None
+        
+        # Track all the messages that need to be rendered in order
+        all_messages = []
+        request_id = None
 
-    try:
-        for raw_event in query_endpoint_stream(
-            endpoint_name=SERVING_ENDPOINT,
-            messages=input_messages,
-            return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-        ):
-            # Extract databricks_output for request_id
-            if "databricks_output" in raw_event:
-                req_id = raw_event["databricks_output"].get("databricks_request_id")
-                if req_id:
-                    request_id = req_id
-            
-            # Parse using MLflow streaming event types, similar to ChatAgentChunk
-            if "type" in raw_event:
-                event = ResponsesAgentStreamEvent.model_validate(raw_event)
+        try:
+            for raw_event in query_endpoint_stream(
+                endpoint_name=SERVING_ENDPOINT,
+                messages=input_messages,
+                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+            ):
+                # Extract databricks_output for request_id
+                if "databricks_output" in raw_event:
+                    req_id = raw_event["databricks_output"].get("databricks_request_id")
+                    if req_id:
+                        request_id = req_id
                 
-                if hasattr(event, 'item') and event.item:
-                    item = event.item  # This is a dict, not a parsed object
+                # Parse using MLflow streaming event types, similar to ChatAgentChunk
+                if "type" in raw_event:
+                    event = ResponsesAgentStreamEvent.model_validate(raw_event)
                     
-                    if item.get("type") == "message":
-                        # Extract text content from message if present
-                        content_parts = item.get("content", [])
-                        for content_part in content_parts:
-                            if content_part.get("type") == "output_text":
-                                text = content_part.get("text", "")
-                                if text:
-                                    all_messages.append({
-                                        "role": "assistant",
-                                        "content": text
-                                    })
+                    if hasattr(event, 'item') and event.item:
+                        item = event.item  # This is a dict, not a parsed object
                         
-                    elif item.get("type") == "function_call":
-                        # Tool call
-                        call_id = item.get("call_id")
-                        function_name = item.get("name")
-                        arguments = item.get("arguments", "")
-                        
-                        # Add to messages for history
-                        all_messages.append({
-                            "role": "assistant",
-                            "content": "",
-                            "tool_calls": [{
-                                "id": call_id,
-                                "type": "function",
-                                "function": {
-                                    "name": function_name,
-                                    "arguments": arguments
-                                }
-                            }]
-                        })
-                        
-                    elif item.get("type") == "function_call_output":
-                        # Tool call output/result
-                        call_id = item.get("call_id")
-                        output = item.get("output", "")
-                        
-                        # Add to messages for history
-                        all_messages.append({
-                            "role": "tool",
-                            "content": output,
-                            "tool_call_id": call_id
-                        })
-            
-            # Handle additional event types that contain response content
-            elif raw_event.get("type") == "response.output_text.delta":
-                # This contains the actual response text being streamed
-                delta_text = raw_event.get("delta", "")
-                if delta_text:
-                    # Find or create the current assistant message
-                    current_assistant_msg = None
-                    for msg in all_messages:
-                        if msg.get("role") == "assistant" and not msg.get("tool_calls"):
-                            current_assistant_msg = msg
-                            break
-                    
-                    if not current_assistant_msg:
-                        current_assistant_msg = {
-                            "role": "assistant",
-                            "content": ""
-                        }
-                        all_messages.append(current_assistant_msg)
-                    
-                    current_assistant_msg["content"] += delta_text
-            
-            elif raw_event.get("type") == "response.output_item.done":
-                # This contains the complete final message
-                if "item" in raw_event:
-                    item = raw_event["item"]
-                    if item.get("type") == "message":
-                        content_parts = item.get("content", [])
-                        for content_part in content_parts:
-                            if content_part.get("type") == "output_text":
-                                text = content_part.get("text", "")
-                                if text:
-                                    # Update or add the final message
-                                    final_message = {
-                                        "role": "assistant",
-                                        "content": text
+                        if item.get("type") == "message":
+                            # Extract text content from message if present
+                            content_parts = item.get("content", [])
+                            for content_part in content_parts:
+                                if content_part.get("type") == "output_text":
+                                    text = content_part.get("text", "")
+                                    if text:
+                                        all_messages.append({
+                                            "role": "assistant",
+                                            "content": text
+                                        })
+                            
+                        elif item.get("type") == "function_call":
+                            # Tool call
+                            call_id = item.get("call_id")
+                            function_name = item.get("name")
+                            arguments = item.get("arguments", "")
+                            
+                            # Add to messages for history
+                            all_messages.append({
+                                "role": "assistant",
+                                "content": "",
+                                "tool_calls": [{
+                                    "id": call_id,
+                                    "type": "function",
+                                    "function": {
+                                        "name": function_name,
+                                        "arguments": arguments
                                     }
-                                    
-                                    # Replace any existing assistant message without tool calls
-                                    for i, msg in enumerate(all_messages):
-                                        if msg.get("role") == "assistant" and not msg.get("tool_calls"):
-                                            all_messages[i] = final_message
-                                            break
-                                    else:
-                                        all_messages.append(final_message)
-            
+                                }]
+                            })
+                            
+                        elif item.get("type") == "function_call_output":
+                            # Tool call output/result
+                            call_id = item.get("call_id")
+                            output = item.get("output", "")
+                            
+                            # Add to messages for history
+                            all_messages.append({
+                                "role": "tool",
+                                "content": output,
+                                "tool_call_id": call_id
+                            })
+                
+                # Handle additional event types that contain response content
+                elif raw_event.get("type") == "response.output_text.delta":
+                    # This contains the actual response text being streamed
+                    delta_text = raw_event.get("delta", "")
+                    if delta_text:
+                        # Find or create the current assistant message
+                        current_assistant_msg = None
+                        for msg in all_messages:
+                            if msg.get("role") == "assistant" and not msg.get("tool_calls"):
+                                current_assistant_msg = msg
+                                break
+                        
+                        if not current_assistant_msg:
+                            current_assistant_msg = {
+                                "role": "assistant",
+                                "content": ""
+                            }
+                            all_messages.append(current_assistant_msg)
+                        
+                        current_assistant_msg["content"] += delta_text
+                
+                elif raw_event.get("type") == "response.output_item.done":
+                    # This contains the complete final message
+                    if "item" in raw_event:
+                        item = raw_event["item"]
+                        if item.get("type") == "message":
+                            content_parts = item.get("content", [])
+                            for content_part in content_parts:
+                                if content_part.get("type") == "output_text":
+                                    text = content_part.get("text", "")
+                                    if text:
+                                        # Update or add the final message
+                                        final_message = {
+                                            "role": "assistant",
+                                            "content": text
+                                        }
+                                        
+                                        # Replace any existing assistant message without tool calls
+                                        for i, msg in enumerate(all_messages):
+                                            if msg.get("role") == "assistant" and not msg.get("tool_calls"):
+                                                all_messages[i] = final_message
+                                                break
+                                        else:
+                                            all_messages.append(final_message)
+                
             elif raw_event.get("type") == "error":
                 # Handle error events from the endpoint
                 error_msg = {
@@ -1282,8 +1282,8 @@ def query_responses_endpoint_and_render(input_messages):
                 }
                 all_messages.append(error_msg)
 
-        return AssistantResponse(messages=all_messages, request_id=request_id)
-    
+            return AssistantResponse(messages=all_messages, request_id=request_id)
+        
     except Exception as e:
         # Check if we got any error events during streaming
         error_message = None
@@ -1295,12 +1295,12 @@ def query_responses_endpoint_and_render(input_messages):
         # Only fall back to non-streaming if we don't have any messages yet
         if not all_messages:
             try:
-                messages, request_id = query_endpoint(
-                    endpoint_name=SERVING_ENDPOINT,
-                    messages=input_messages,
-                    return_traces=ENDPOINT_SUPPORTS_FEEDBACK
-                )
-                return AssistantResponse(messages=messages, request_id=request_id)
+            messages, request_id = query_endpoint(
+                endpoint_name=SERVING_ENDPOINT,
+                messages=input_messages,
+                return_traces=ENDPOINT_SUPPORTS_FEEDBACK
+            )
+            return AssistantResponse(messages=messages, request_id=request_id)
             except Exception as fallback_error:
                 error_text = error_message or str(fallback_error)
                 return AssistantResponse(
@@ -1336,7 +1336,7 @@ if prompt:
             backdrop-filter: blur(5px);
         ">
         """, unsafe_allow_html=True)
-        user_msg.render(len(st.session_state.history) - 1)
+    user_msg.render(len(st.session_state.history) - 1)
         st.markdown("</div>", unsafe_allow_html=True)
     
     # Show professional thinking animation
@@ -1386,30 +1386,30 @@ if prompt:
         </style>
         """, unsafe_allow_html=True)
 
-        # Convert history to standard chat message format for the query methods
-        input_messages = [msg for elem in st.session_state.history for msg in elem.to_input_messages()]
-        
-        # Handle the response using the appropriate handler
-        assistant_response = query_endpoint_and_render(task_type, input_messages)
-        
-        # Clear thinking animation
+    # Convert history to standard chat message format for the query methods
+    input_messages = [msg for elem in st.session_state.history for msg in elem.to_input_messages()]
+    
+    # Handle the response using the appropriate handler
+    assistant_response = query_endpoint_and_render(task_type, input_messages)
+    
+    # Clear thinking animation
     thinking_placeholder.empty()
     
     # Add assistant response to history
     if assistant_response:
-        st.session_state.history.append(assistant_response)
-    
-    # Show assistant response immediately
-    with st.container():
-        st.markdown(f"""
-        <div class="chat-message" style="
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            border-left: 4px solid #667eea;
-            backdrop-filter: blur(5px);
-        ">
-        """, unsafe_allow_html=True)
-        assistant_response.render(len(st.session_state.history) - 1)
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.session_state.history.append(assistant_response)
+        
+        # Show assistant response immediately
+        with st.container():
+            st.markdown(f"""
+            <div class="chat-message" style="
+                background: rgba(255,255,255,0.05);
+                border-radius: 12px;
+                padding: 0.5rem;
+                margin: 0.25rem 0;
+                border-left: 4px solid #667eea;
+                backdrop-filter: blur(5px);
+            ">
+            """, unsafe_allow_html=True)
+            assistant_response.render(len(st.session_state.history) - 1)
+            st.markdown("</div>", unsafe_allow_html=True)

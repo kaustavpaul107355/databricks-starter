@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zerobus Delta App - Test Interface</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        select, textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, textarea:focus, input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response-section {
+            margin-top: 20px;
+        }
+
+        .response-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #34495e;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-error {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .status-pending {
+            background: #f39c12;
+            color: white;
+        }
+
+        .request-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            border-color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-item-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .history-item-endpoint {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .example-templates {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .template-btn {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .template-btn:hover {
+            background: #d5dbdb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-rocket"></i> Zerobus Delta App</h1>
+            <p>Test your FastAPI endpoints with real-time status tracking</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Request Section -->
+            <div class="section">
+                <h2><i class="fas fa-paper-plane"></i> Send Request</h2>
+                
+                <div class="form-group">
+                    <label for="endpoint">Endpoint:</label>
+                    <select id="endpoint">
+                        <option value="/api/v1/process">POST /api/v1/process (Structured)</option>
+                        <option value="/api/v1/process-simple">POST /api/v1/process-simple (Simple)</option>
+                        <option value="/health">GET /health (Health Check)</option>
+                        <option value="/debug">GET /debug (Debug Info)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="payload">Request Payload:</label>
+                    <div class="example-templates">
+                        <button type="button" class="template-btn" onclick="loadTemplate('structured')">
+                            <i class="fas fa-file-code"></i> Structured Example
+                        </button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('simple')">
+                            <i class="fas fa-file-alt"></i> Simple Example
+                        </button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('multi')">
+                            <i class="fas fa-layer-group"></i> Multi-Category
+                        </button>
+                        <button type="button" class="template-btn" onclick="loadTemplate('clear')">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                    <textarea id="payload" placeholder="Enter your JSON payload here..."></textarea>
+                </div>
+
+                <button class="btn" onclick="sendRequest()" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i> Send Request
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Sending request...</p>
+                </div>
+
+                <div class="response-section">
+                    <h3>Response <span id="statusIndicator"></span></h3>
+                    <div class="response-box" id="response">No requests sent yet...</div>
+                </div>
+            </div>
+
+            <!-- Status & History Section -->
+            <div class="section">
+                <h2><i class="fas fa-chart-line"></i> Request History & Status</h2>
+                
+                <div class="form-group">
+                    <label>Recent Requests:</label>
+                    <div class="request-history" id="requestHistory">
+                        <p style="text-align: center; color: #6c757d; padding: 20px;">
+                            <i class="fas fa-history"></i><br>
+                            No requests yet. Send your first request!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Quick Actions:</label>
+                    <button class="btn" onclick="checkHealth()" style="margin-right: 10px;">
+                        <i class="fas fa-heartbeat"></i> Health Check
+                    </button>
+                    <button class="btn" onclick="clearHistory()">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let requestHistory = [];
+        let requestCounter = 0;
+
+        // Example templates
+        const templates = {
+            structured: {
+                "items": [
+                    {
+                        "id": "user-001",
+                        "data": {
+                            "name": "Alice Johnson",
+                            "email": "alice@example.com",
+                            "age": 28,
+                            "department": "Engineering"
+                        },
+                        "category": "users",
+                        "timestamp": new Date().toISOString()
+                    },
+                    {
+                        "data": {
+                            "order_id": "ord-12345",
+                            "amount": 199.99,
+                            "currency": "USD",
+                            "items": ["laptop", "mouse"]
+                        },
+                        "category": "orders"
+                    }
+                ],
+                "source": "web_ui",
+                "batch_id": "batch_" + Date.now()
+            },
+            simple: {
+                "message": "Hello from Web UI",
+                "timestamp": new Date().toISOString(),
+                "data": {
+                    "test": true,
+                    "numbers": [1, 2, 3, 4, 5],
+                    "nested": {
+                        "key": "value"
+                    }
+                }
+            },
+            multi: {
+                "items": [
+                    {"data": {"name": "John"}, "category": "users"},
+                    {"data": {"name": "Jane"}, "category": "users"},
+                    {"data": {"product": "Widget"}, "category": "products"},
+                    {"data": {"event": "click"}, "category": "analytics"},
+                    {"data": {"order_id": "123"}, "category": "orders"}
+                ],
+                "source": "multi_test"
+            }
+        };
+
+        function loadTemplate(type) {
+            const payloadTextarea = document.getElementById('payload');
+            if (type === 'clear') {
+                payloadTextarea.value = '';
+            } else {
+                payloadTextarea.value = JSON.stringify(templates[type], null, 2);
+            }
+        }
+
+        function updateEndpointPayload() {
+            const endpoint = document.getElementById('endpoint').value;
+            const payloadTextarea = document.getElementById('payload');
+            
+            if (endpoint.includes('/health') || endpoint.includes('/debug')) {
+                payloadTextarea.value = 'No payload needed for GET requests';
+                payloadTextarea.disabled = true;
+            } else {
+                payloadTextarea.disabled = false;
+                if (!payloadTextarea.value || payloadTextarea.value === 'No payload needed for GET requests') {
+                    loadTemplate('structured');
+                }
+            }
+        }
+
+        async function sendRequest() {
+            const endpoint = document.getElementById('endpoint').value;
+            const payloadText = document.getElementById('payload').value;
+            const responseDiv = document.getElementById('response');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const sendBtn = document.getElementById('sendBtn');
+            const loading = document.getElementById('loading');
+
+            // Show loading
+            sendBtn.disabled = true;
+            loading.style.display = 'block';
+            statusIndicator.innerHTML = '<span class="status-indicator status-pending">Sending...</span>';
+
+            const requestId = ++requestCounter;
+            const startTime = new Date();
+
+            try {
+                let response;
+                const isGetRequest = endpoint.includes('/health') || endpoint.includes('/debug');
+                
+                if (isGetRequest) {
+                    response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                } else {
+                    let payload;
+                    try {
+                        payload = JSON.parse(payloadText);
+                    } catch (e) {
+                        throw new Error('Invalid JSON payload: ' + e.message);
+                    }
+
+                    response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                const endTime = new Date();
+                const duration = endTime - startTime;
+                const responseData = await response.json();
+
+                // Update UI
+                responseDiv.textContent = JSON.stringify(responseData, null, 2);
+                
+                if (response.ok) {
+                    statusIndicator.innerHTML = `<span class="status-indicator status-success">Success (${response.status}) - ${duration}ms</span>`;
+                } else {
+                    statusIndicator.innerHTML = `<span class="status-indicator status-error">Error (${response.status}) - ${duration}ms</span>`;
+                }
+
+                // Add to history
+                addToHistory({
+                    id: requestId,
+                    endpoint: endpoint,
+                    method: isGetRequest ? 'GET' : 'POST',
+                    status: response.status,
+                    duration: duration,
+                    timestamp: startTime,
+                    response: responseData,
+                    success: response.ok
+                });
+
+            } catch (error) {
+                const endTime = new Date();
+                const duration = endTime - startTime;
+                
+                responseDiv.textContent = `Error: ${error.message}`;
+                statusIndicator.innerHTML = `<span class="status-indicator status-error">Failed - ${duration}ms</span>`;
+                
+                addToHistory({
+                    id: requestId,
+                    endpoint: endpoint,
+                    method: 'POST',
+                    status: 'ERROR',
+                    duration: duration,
+                    timestamp: startTime,
+                    response: { error: error.message },
+                    success: false
+                });
+            } finally {
+                // Hide loading
+                sendBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function addToHistory(request) {
+            requestHistory.unshift(request);
+            if (requestHistory.length > 10) {
+                requestHistory.pop();
+            }
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyDiv = document.getElementById('requestHistory');
+            
+            if (requestHistory.length === 0) {
+                historyDiv.innerHTML = `
+                    <p style="text-align: center; color: #6c757d; padding: 20px;">
+                        <i class="fas fa-history"></i><br>
+                        No requests yet. Send your first request!
+                    </p>
+                `;
+                return;
+            }
+
+            const historyHTML = requestHistory.map(req => `
+                <div class="history-item" onclick="showRequestDetails(${req.id})">
+                    <div class="history-item-header">
+                        <span class="history-item-endpoint">${req.method} ${req.endpoint}</span>
+                        <span class="status-indicator ${req.success ? 'status-success' : 'status-error'}">
+                            ${req.status}
+                        </span>
+                    </div>
+                    <div class="history-item-time">
+                        ${req.timestamp.toLocaleTimeString()} - ${req.duration}ms
+                    </div>
+                </div>
+            `).join('');
+
+            historyDiv.innerHTML = historyHTML;
+        }
+
+        function showRequestDetails(requestId) {
+            const request = requestHistory.find(r => r.id === requestId);
+            if (request) {
+                document.getElementById('response').textContent = JSON.stringify(request.response, null, 2);
+                document.getElementById('statusIndicator').innerHTML = 
+                    `<span class="status-indicator ${request.success ? 'status-success' : 'status-error'}">
+                        ${request.success ? 'Success' : 'Error'} (${request.status}) - ${request.duration}ms
+                    </span>`;
+            }
+        }
+
+        async function checkHealth() {
+            document.getElementById('endpoint').value = '/health';
+            updateEndpointPayload();
+            await sendRequest();
+        }
+
+        function clearHistory() {
+            requestHistory = [];
+            updateHistoryDisplay();
+            document.getElementById('response').textContent = 'History cleared...';
+            document.getElementById('statusIndicator').innerHTML = '';
+        }
+
+        // Initialize
+        document.getElementById('endpoint').addEventListener('change', updateEndpointPayload);
+        loadTemplate('structured');
+        updateEndpointPayload();
+
+        // Auto-refresh health check every 30 seconds
+        setInterval(async () => {
+            try {
+                const response = await fetch('/health');
+                // Just check if server is responsive, don't update UI
+            } catch (e) {
+                // Server might be down
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+fastapi==0.109.0
+uvicorn==0.27.0
+python-multipart==0.0.9
+pydantic==2.5.0
+python-dateutil==2.8.2
+aiofiles==23.2.1
