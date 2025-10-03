@@ -1,33 +1,26 @@
-# Databricks App Configuration for Zerobus Delta App
-# Enterprise configuration following Databricks Apps standards
+# Databricks Delta App - Bundle Configuration
+# Configuration for deploying the FastAPI app to Databricks Apps platform
+# Follows Databricks Apps naming and deployment best practices
 
 bundle:
-  name: zerobus-delta-app
+  name: databricks-delta-app
 
 workspace:
-  host: https://e2-demo-field-eng.cloud.databricks.com
+  host: https://e2-dogfood.staging.cloud.databricks.com
 
 resources:
   apps:
-    zerobus-delta-app:
-      name: zerobus-delta-app
-      description: "Enterprise FastAPI server for processing payloads and writing to Delta tables via Zerobus"
+    databricks-delta-app:
+      name: databricks-delta-app
+      description: "FastAPI app for processing structured data and writing to Delta tables"
+      source_code_path: /Workspace/Users/${workspace.current_user.userName}/databricks-delta-app
       
 targets:
   dev:
     mode: development
     workspace:
-      root_path: /Workspace/Users/${workspace.current_user.userName}/zerobus-delta-app
+      root_path: /Workspace/Users/${workspace.current_user.userName}/databricks-delta-app
     resources:
       apps:
-        zerobus-delta-app:
-          name: ${bundle.name}-dev
-          
-  prod:
-    mode: production
-    workspace:
-      root_path: /Workspace/Users/${workspace.current_user.userName}/zerobus-delta-app-prod
-    resources:
-      apps:
-        zerobus-delta-app:
-          name: ${bundle.name}-prod
+        databricks-delta-app:
+          name: ${bundle.name}

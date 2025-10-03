@@ -1,9 +1,4 @@
-command: ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Databricks Delta App Configuration
+# Databricks Apps configuration for running the FastAPI application
 
-env:
-  - name: APP_ENV
-    value: "production"
-  - name: LOG_LEVEL
-    value: "INFO"
-  - name: PORT
-    value: "8000"
+command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

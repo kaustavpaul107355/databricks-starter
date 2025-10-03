@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zerobus Delta App - Test Interface</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Databricks Direct Write App</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +12,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -23,48 +22,43 @@
             max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
+            border-radius: 12px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
             padding: 30px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.5rem;
             margin-bottom: 10px;
         }
 
         .header p {
-            font-size: 1.1em;
             opacity: 0.9;
+            font-size: 1.1rem;
         }
 
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px;
+            padding: 40px;
         }
 
-        .section {
+        .form-section {
             background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
         }
-
-        .section h2 {
+        
+        .form-section h3 {
             color: #2c3e50;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 1.5rem;
         }
 
         .form-group {
@@ -75,70 +69,104 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #495057;
+            color: #34495e;
         }
 
-        select, textarea, input {
+        select, input, textarea {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            border: 2px solid #e1e8ed;
+            border-radius: 6px;
             font-size: 14px;
             transition: border-color 0.3s;
         }
 
-        select:focus, textarea:focus, input:focus {
+        select:focus, input:focus, textarea:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: #667eea;
         }
-
-        textarea {
-            min-height: 150px;
-            font-family: 'Courier New', monospace;
-            resize: vertical;
+        
+        .product-item {
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .product-item h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-row-full {
+            display: grid;
+            grid-template-columns: 1fr;
         }
 
         .btn {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 12px 25px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
         }
-
-        .btn:hover {
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-
-        .btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
         }
 
         .response-section {
-            margin-top: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 30px;
         }
 
-        .response-box {
+        .response-content {
             background: #2c3e50;
             color: #ecf0f1;
             padding: 20px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
             font-size: 13px;
+            white-space: pre-wrap;
             max-height: 400px;
             overflow-y: auto;
-            white-space: pre-wrap;
-            border: 1px solid #34495e;
         }
 
         .status-indicator {
@@ -151,437 +179,420 @@
         }
 
         .status-success {
-            background: #27ae60;
-            color: white;
+            background: #d4edda;
+            color: #155724;
         }
 
         .status-error {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .status-pending {
-            background: #f39c12;
-            color: white;
-        }
-
-        .request-history {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .history-item:hover {
-            border-color: #3498db;
-            transform: translateX(5px);
-        }
-
-        .history-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .history-item-time {
-            font-size: 12px;
-            color: #6c757d;
-        }
-
-        .history-item-endpoint {
-            font-weight: 600;
-            color: #2c3e50;
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .hidden {
             display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .example-templates {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .template-btn {
-            background: #ecf0f1;
-            border: 1px solid #bdc3c7;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background 0.2s;
-        }
-
-        .template-btn:hover {
-            background: #d5dbdb;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-rocket"></i> Zerobus Delta App</h1>
-            <p>Test your FastAPI endpoints with real-time status tracking</p>
+            <h1>🚀 Databricks Direct Write App</h1>
+            <p>Process structured data and write directly to Delta tables</p>
         </div>
 
         <div class="main-content">
-            <!-- Request Section -->
-            <div class="section">
-                <h2><i class="fas fa-paper-plane"></i> Send Request</h2>
-                
-                <div class="form-group">
-                    <label for="endpoint">Endpoint:</label>
-                    <select id="endpoint">
-                        <option value="/api/v1/process">POST /api/v1/process (Structured)</option>
-                        <option value="/api/v1/process-simple">POST /api/v1/process-simple (Simple)</option>
-                        <option value="/health">GET /health (Health Check)</option>
-                        <option value="/debug">GET /debug (Debug Info)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="payload">Request Payload:</label>
-                    <div class="example-templates">
-                        <button type="button" class="template-btn" onclick="loadTemplate('structured')">
-                            <i class="fas fa-file-code"></i> Structured Example
-                        </button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('simple')">
-                            <i class="fas fa-file-alt"></i> Simple Example
-                        </button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('multi')">
-                            <i class="fas fa-layer-group"></i> Multi-Category
-                        </button>
-                        <button type="button" class="template-btn" onclick="loadTemplate('clear')">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
+            <!-- Writer Selection -->
+            <div class="form-section">
+                <h3>⚙️ Writer Configuration</h3>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="writerType">📝 Data Writer:</label>
+                            <select id="writerType" onchange="updateWriterInfo()">
+                                <option value="direct_delta" selected>🏗️ Direct Delta Writer (Working)</option>
+                                <option value="zerobus">🚀 Zerobus Writer (Development)</option>
+                                <option value="mock">🧪 Mock Writer (Testing)</option>
+                            </select>
+                        </div>
                     </div>
-                    <textarea id="payload" placeholder="Enter your JSON payload here..."></textarea>
-                </div>
-
-                <button class="btn" onclick="sendRequest()" id="sendBtn">
-                    <i class="fas fa-paper-plane"></i> Send Request
-                </button>
-
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>Sending request...</p>
-                </div>
-
-                <div class="response-section">
-                    <h3>Response <span id="statusIndicator"></span></h3>
-                    <div class="response-box" id="response">No requests sent yet...</div>
+                    <div id="writerInfo" style="margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 13px;">
+                        <!-- Writer info will be populated by JavaScript -->
+                    </div>
                 </div>
             </div>
 
-            <!-- Status & History Section -->
-            <div class="section">
-                <h2><i class="fas fa-chart-line"></i> Request History & Status</h2>
-                
+            <!-- Schema Type Selection -->
+            <div class="form-section">
+                <h3>📊 Structured Payload Configuration</h3>
                 <div class="form-group">
-                    <label>Recent Requests:</label>
-                    <div class="request-history" id="requestHistory">
-                        <p style="text-align: center; color: #6c757d; padding: 20px;">
-                            <i class="fas fa-history"></i><br>
-                            No requests yet. Send your first request!
-                        </p>
+                    <label for="schemaType">Schema Type:</label>
+                    <select id="schemaType" onchange="updateSchema()">
+                        <option value="products">Products</option>
+                        <option value="users">Users</option>
+                        <option value="orders">Orders</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                </div>
+
+            <!-- Products Schema -->
+            <div id="productsSchema" class="form-section">
+                <h3>🛍️ Products Data</h3>
+                <div style="background: #e8f4fd; padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 13px;">
+                    <strong>📋 Table Schema:</strong> kaustavpaul_demo.delta_app.delta_products_data<br>
+                    <strong>📝 Fields:</strong> record_id, product_id, product_name, product_price, category, sale_start_date, sale_stop_date, processed_at, batch_id, source<br>
+                    <strong>🔄 Auto-generated:</strong> record_id, processed_at, batch_id, source
+                </div>
+                <div id="productItems">
+                    <div class="product-item">
+                        <h4>Product #1</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Product ID:</label>
+                                <input type="text" class="product-id" value="PROD001" placeholder="e.g., PROD001">
+                            </div>
+                            <div class="form-group">
+                                <label>Product Name:</label>
+                                <input type="text" class="product-name" value="iPhone 15" placeholder="e.g., iPhone 15">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Product Price ($):</label>
+                                <input type="number" class="product-price" value="999.99" step="0.01" placeholder="e.g., 999.99">
+                            </div>
+                            <div class="form-group">
+                                <label>Category:</label>
+                                <select class="product-category">
+                                    <option value="electronics" selected>Electronics</option>
+                                    <option value="general">General</option>
+                                    <option value="clothing">Clothing</option>
+                                    <option value="books">Books</option>
+                                    <option value="home">Home & Garden</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Sale Start Date:</label>
+                                <input type="date" class="sale-start-date" value="2024-01-01">
+                            </div>
+                <div class="form-group">
+                                <label>Sale Stop Date:</label>
+                                <input type="date" class="sale-stop-date" value="2024-12-31">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Quick Actions:</label>
-                    <button class="btn" onclick="checkHealth()" style="margin-right: 10px;">
-                        <i class="fas fa-heartbeat"></i> Health Check
-                    </button>
-                    <button class="btn" onclick="clearHistory()">
-                        <i class="fas fa-trash"></i> Clear History
-                    </button>
+                <button class="btn btn-secondary" onclick="addProductItem()">+ Add Product</button>
+                <button class="btn btn-primary" onclick="submitStructuredData()">🚀 Process Products Data</button>
+                <button class="btn btn-secondary" onclick="clearForm()">🗑️ Clear</button>
+                </div>
+
+            <!-- Users Schema (Hidden by default) -->
+            <div id="usersSchema" class="form-section hidden">
+                <h3>👥 Users Data</h3>
+                <p>Users schema coming soon...</p>
+                </div>
+
+            <!-- Orders Schema (Hidden by default) -->
+            <div id="ordersSchema" class="form-section hidden">
+                <h3>📦 Orders Data</h3>
+                <p>Orders schema coming soon...</p>
+            </div>
+
+            <!-- Custom Schema (Hidden by default) -->
+            <div id="customSchema" class="form-section hidden">
+                <h3>⚙️ Custom Data</h3>
+                <p>Custom schema coming soon...</p>
+                </div>
+
+            <!-- Response Section -->
+            <div class="response-section">
+                <h3>📋 Response <span id="statusIndicator"></span></h3>
+                <div class="response-content" id="responseContent">
+Ready to process structured data...
+
+Click "Process Products Data" to test the Delta table integration!
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let requestHistory = [];
-        let requestCounter = 0;
-
-        // Example templates
-        const templates = {
-            structured: {
-                "items": [
-                    {
-                        "id": "user-001",
-                        "data": {
-                            "name": "Alice Johnson",
-                            "email": "alice@example.com",
-                            "age": 28,
-                            "department": "Engineering"
-                        },
-                        "category": "users",
-                        "timestamp": new Date().toISOString()
-                    },
-                    {
-                        "data": {
-                            "order_id": "ord-12345",
-                            "amount": 199.99,
-                            "currency": "USD",
-                            "items": ["laptop", "mouse"]
-                        },
-                        "category": "orders"
-                    }
-                ],
-                "source": "web_ui",
-                "batch_id": "batch_" + Date.now()
-            },
-            simple: {
-                "message": "Hello from Web UI",
-                "timestamp": new Date().toISOString(),
-                "data": {
-                    "test": true,
-                    "numbers": [1, 2, 3, 4, 5],
-                    "nested": {
-                        "key": "value"
-                    }
-                }
-            },
-            multi: {
-                "items": [
-                    {"data": {"name": "John"}, "category": "users"},
-                    {"data": {"name": "Jane"}, "category": "users"},
-                    {"data": {"product": "Widget"}, "category": "products"},
-                    {"data": {"event": "click"}, "category": "analytics"},
-                    {"data": {"order_id": "123"}, "category": "orders"}
-                ],
-                "source": "multi_test"
-            }
-        };
-
-        function loadTemplate(type) {
-            const payloadTextarea = document.getElementById('payload');
-            if (type === 'clear') {
-                payloadTextarea.value = '';
-            } else {
-                payloadTextarea.value = JSON.stringify(templates[type], null, 2);
-            }
-        }
-
-        function updateEndpointPayload() {
-            const endpoint = document.getElementById('endpoint').value;
-            const payloadTextarea = document.getElementById('payload');
+        // Writer configuration management
+        function updateWriterInfo() {
+            const writerType = document.getElementById('writerType').value;
+            const writerInfo = document.getElementById('writerInfo');
             
-            if (endpoint.includes('/health') || endpoint.includes('/debug')) {
-                payloadTextarea.value = 'No payload needed for GET requests';
-                payloadTextarea.disabled = true;
-            } else {
-                payloadTextarea.disabled = false;
-                if (!payloadTextarea.value || payloadTextarea.value === 'No payload needed for GET requests') {
-                    loadTemplate('structured');
+            const writerConfigs = {
+                'direct_delta': {
+                    name: 'Direct Delta Writer',
+                    status: '✅ Working',
+                    description: 'Writes data directly to Delta tables via SQL INSERT statements using Databricks SDK.',
+                    features: ['✅ Reliable SQL execution', '✅ Immediate feedback', '✅ Production ready'],
+                    color: '#d4edda',
+                    border: '#c3e6cb'
+                },
+                'zerobus': {
+                    name: 'Zerobus Writer', 
+                    status: '🔄 Development',
+                    description: 'Writes data via Zerobus Direct Write API with gRPC streaming and protobuf serialization.',
+                    features: ['🔄 High-performance streaming', '🔄 Protobuf serialization', '🔄 In development'],
+                    color: '#fff3cd',
+                    border: '#ffeaa7'
+                },
+                'mock': {
+                    name: 'Mock Writer',
+                    status: '🧪 Testing',
+                    description: 'Simulates data writing for testing purposes. No actual data is persisted.',
+                    features: ['🧪 Safe testing', '🧪 No data persistence', '🧪 Always available'],
+                    color: '#e2e3e5',
+                    border: '#d6d8db'
                 }
-            }
+            };
+            
+            const config = writerConfigs[writerType];
+            writerInfo.style.backgroundColor = config.color;
+            writerInfo.style.border = `1px solid ${config.border}`;
+            
+            writerInfo.innerHTML = `
+                <strong>📝 ${config.name}</strong> - ${config.status}<br>
+                <div style="margin: 8px 0;">${config.description}</div>
+                <div style="margin-top: 8px;">
+                    ${config.features.map(feature => `<div>${feature}</div>`).join('')}
+                </div>
+            `;
         }
 
-        async function sendRequest() {
-            const endpoint = document.getElementById('endpoint').value;
-            const payloadText = document.getElementById('payload').value;
-            const responseDiv = document.getElementById('response');
-            const statusIndicator = document.getElementById('statusIndicator');
-            const sendBtn = document.getElementById('sendBtn');
-            const loading = document.getElementById('loading');
-
-            // Show loading
-            sendBtn.disabled = true;
-            loading.style.display = 'block';
-            statusIndicator.innerHTML = '<span class="status-indicator status-pending">Sending...</span>';
-
-            const requestId = ++requestCounter;
-            const startTime = new Date();
-
-            try {
-                let response;
-                const isGetRequest = endpoint.includes('/health') || endpoint.includes('/debug');
+        function updateSchema() {
+            const schemaType = document.getElementById('schemaType').value;
+            
+            // Hide all schemas
+            document.getElementById('productsSchema').classList.add('hidden');
+            document.getElementById('usersSchema').classList.add('hidden');
+            document.getElementById('ordersSchema').classList.add('hidden');
+            document.getElementById('customSchema').classList.add('hidden');
+            
+            // Show selected schema
+            document.getElementById(schemaType + 'Schema').classList.remove('hidden');
+        }
+        
+        function addProductItem() {
+            const container = document.getElementById('productItems');
+            const itemCount = container.children.length + 1;
+            
+            const newItem = document.createElement('div');
+            newItem.className = 'product-item';
+            newItem.innerHTML = `
+                <h4>Product #${itemCount}</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product ID:</label>
+                        <input type="text" class="product-id" placeholder="e.g., PROD00${itemCount}">
+                    </div>
+                    <div class="form-group">
+                        <label>Product Name:</label>
+                        <input type="text" class="product-name" placeholder="e.g., MacBook Pro">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product Price ($):</label>
+                        <input type="number" class="product-price" step="0.01" placeholder="e.g., 2499.99">
+                    </div>
+                    <div class="form-group">
+                        <label>Category:</label>
+                        <select class="product-category">
+                            <option value="electronics" selected>Electronics</option>
+                            <option value="general">General</option>
+                            <option value="clothing">Clothing</option>
+                            <option value="books">Books</option>
+                            <option value="home">Home & Garden</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sale Start Date:</label>
+                        <input type="date" class="sale-start-date" value="2024-01-01">
+                    </div>
+                    <div class="form-group">
+                        <label>Sale Stop Date:</label>
+                        <input type="date" class="sale-stop-date" value="2024-12-31">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(newItem);
+        }
+        
+        function clearForm() {
+            // Clear the response area
+            updateResponse('Ready to process structured data...\n\nClick "Process Products Data" to test the Direct Write integration!', '');
+            
+            // Reset product items to a single empty item
+            const container = document.getElementById('productItems');
+            container.innerHTML = `
+                <div class="product-item">
+                    <h4>Product #1</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Product ID:</label>
+                            <input type="text" class="product-id" value="" placeholder="e.g., PROD001">
+                        </div>
+                        <div class="form-group">
+                            <label>Product Name:</label>
+                            <input type="text" class="product-name" value="" placeholder="e.g., iPhone 15">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Product Price ($):</label>
+                            <input type="number" class="product-price" value="" step="0.01" placeholder="e.g., 999.99">
+                        </div>
+                        <div class="form-group">
+                            <label>Category:</label>
+                            <select class="product-category">
+                                <option value="">-- Select Category --</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="general">General</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="books">Books</option>
+                                <option value="home">Home & Garden</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sale Start Date:</label>
+                            <input type="date" class="sale-start-date" value="">
+                        </div>
+                        <div class="form-group">
+                            <label>Sale Stop Date:</label>
+                            <input type="date" class="sale-stop-date" value="">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Reset writer selection to default
+            document.getElementById('writerType').value = 'direct_delta';
+            updateWriterInfo();
+            
+            // Reset schema selection to default
+            document.getElementById('schemaType').value = 'products';
+            updateSchema();
+            
+            console.log('🗑️ Form cleared successfully');
+        }
+        
+        async function submitStructuredData() {
+            const schemaType = document.getElementById('schemaType').value;
+            const writerType = document.getElementById('writerType').value;
+            
+            console.log('🔄 Processing with writer:', writerType);
+            
+            if (schemaType !== 'products') {
+                updateResponse('Schema type "' + schemaType + '" is not implemented yet. Please select "Products".', 'error');
+                return;
+            }
+            
+            // Collect product data
+            const productItems = [];
+            const items = document.querySelectorAll('.product-item');
+            
+            items.forEach(item => {
+                const productId = item.querySelector('.product-id').value;
+                const productName = item.querySelector('.product-name').value;
+                const productPrice = parseFloat(item.querySelector('.product-price').value);
+                const productCategory = item.querySelector('.product-category').value;
+                const saleStartDate = item.querySelector('.sale-start-date').value;
+                const saleStopDate = item.querySelector('.sale-stop-date').value;
                 
-                if (isGetRequest) {
-                    response = await fetch(endpoint, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
+                console.log('Debug - Product Category:', productCategory); // Debug line
+                
+                if (productId && productName && productPrice && saleStartDate && saleStopDate) {
+                    productItems.push({
+                        product_id: productId,
+                        product_name: productName,
+                        product_price: productPrice,
+                        category: productCategory || 'general',  // Default fallback
+                        sale_start_date: saleStartDate,
+                        sale_stop_date: saleStopDate
                     });
-                } else {
-                    let payload;
-                    try {
-                        payload = JSON.parse(payloadText);
-                    } catch (e) {
-                        throw new Error('Invalid JSON payload: ' + e.message);
-                    }
-
-                    response = await fetch(endpoint, {
+                }
+            });
+            
+            if (productItems.length === 0) {
+                updateResponse('Please fill in at least one complete product item.', 'error');
+                return;
+            }
+            
+            const payload = {
+                schema_type: schemaType,
+                items: productItems,
+                writer_type: writerType  // Include writer selection
+            };
+            
+            // Show loading state
+            document.body.classList.add('loading');
+            updateResponse('Processing structured data with ' + writerType + ' writer...\n\nPayload:\n' + JSON.stringify(payload, null, 2), 'loading');
+            
+            try {
+                const response = await fetch('/api/v1/process-structured', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(payload)
                     });
-                }
-
-                const endTime = new Date();
-                const duration = endTime - startTime;
-                const responseData = await response.json();
-
-                // Update UI
-                responseDiv.textContent = JSON.stringify(responseData, null, 2);
+                
+                const result = await response.json();
                 
                 if (response.ok) {
-                    statusIndicator.innerHTML = `<span class="status-indicator status-success">Success (${response.status}) - ${duration}ms</span>`;
+                    const writerResult = result.zerobus_integration || result.writer_result || {};
+                    const writerStatus = writerResult.status === 'success' ? '✅' : '❌';
+                    const writerInfo = `\n\n📝 Writer: ${writerResult.writer_name || writerResult.approach || 'Unknown'} ${writerStatus}`;
+                    
+                    updateResponse('✅ SUCCESS!\n\n' + JSON.stringify(result, null, 2) + writerInfo, 'success');
                 } else {
-                    statusIndicator.innerHTML = `<span class="status-indicator status-error">Error (${response.status}) - ${duration}ms</span>`;
+                    updateResponse('❌ ERROR!\n\n' + JSON.stringify(result, null, 2), 'error');
                 }
-
-                // Add to history
-                addToHistory({
-                    id: requestId,
-                    endpoint: endpoint,
-                    method: isGetRequest ? 'GET' : 'POST',
-                    status: response.status,
-                    duration: duration,
-                    timestamp: startTime,
-                    response: responseData,
-                    success: response.ok
-                });
-
             } catch (error) {
-                const endTime = new Date();
-                const duration = endTime - startTime;
-                
-                responseDiv.textContent = `Error: ${error.message}`;
-                statusIndicator.innerHTML = `<span class="status-indicator status-error">Failed - ${duration}ms</span>`;
-                
-                addToHistory({
-                    id: requestId,
-                    endpoint: endpoint,
-                    method: 'POST',
-                    status: 'ERROR',
-                    duration: duration,
-                    timestamp: startTime,
-                    response: { error: error.message },
-                    success: false
-                });
+                updateResponse('❌ NETWORK ERROR!\n\n' + error.message, 'error');
             } finally {
-                // Hide loading
-                sendBtn.disabled = false;
-                loading.style.display = 'none';
+                document.body.classList.remove('loading');
             }
         }
-
-        function addToHistory(request) {
-            requestHistory.unshift(request);
-            if (requestHistory.length > 10) {
-                requestHistory.pop();
-            }
-            updateHistoryDisplay();
-        }
-
-        function updateHistoryDisplay() {
-            const historyDiv = document.getElementById('requestHistory');
+        
+        function updateResponse(content, status) {
+            const responseContent = document.getElementById('responseContent');
+            const statusIndicator = document.getElementById('statusIndicator');
             
-            if (requestHistory.length === 0) {
-                historyDiv.innerHTML = `
-                    <p style="text-align: center; color: #6c757d; padding: 20px;">
-                        <i class="fas fa-history"></i><br>
-                        No requests yet. Send your first request!
-                    </p>
-                `;
-                return;
+            responseContent.textContent = content;
+            
+            statusIndicator.className = 'status-indicator';
+            if (status === 'success') {
+                statusIndicator.className += ' status-success';
+                statusIndicator.textContent = 'SUCCESS';
+            } else if (status === 'error') {
+                statusIndicator.className += ' status-error';
+                statusIndicator.textContent = 'ERROR';
+            } else {
+                statusIndicator.textContent = '';
             }
-
-            const historyHTML = requestHistory.map(req => `
-                <div class="history-item" onclick="showRequestDetails(${req.id})">
-                    <div class="history-item-header">
-                        <span class="history-item-endpoint">${req.method} ${req.endpoint}</span>
-                        <span class="status-indicator ${req.success ? 'status-success' : 'status-error'}">
-                            ${req.status}
-                        </span>
-                    </div>
-                    <div class="history-item-time">
-                        ${req.timestamp.toLocaleTimeString()} - ${req.duration}ms
-                    </div>
-                </div>
-            `).join('');
-
-            historyDiv.innerHTML = historyHTML;
-        }
-
-        function showRequestDetails(requestId) {
-            const request = requestHistory.find(r => r.id === requestId);
-            if (request) {
-                document.getElementById('response').textContent = JSON.stringify(request.response, null, 2);
-                document.getElementById('statusIndicator').innerHTML = 
-                    `<span class="status-indicator ${request.success ? 'status-success' : 'status-error'}">
-                        ${request.success ? 'Success' : 'Error'} (${request.status}) - ${request.duration}ms
-                    </span>`;
-            }
-        }
-
-        async function checkHealth() {
-            document.getElementById('endpoint').value = '/health';
-            updateEndpointPayload();
-            await sendRequest();
-        }
-
-        function clearHistory() {
-            requestHistory = [];
-            updateHistoryDisplay();
-            document.getElementById('response').textContent = 'History cleared...';
-            document.getElementById('statusIndicator').innerHTML = '';
         }
 
         // Initialize
-        document.getElementById('endpoint').addEventListener('change', updateEndpointPayload);
-        loadTemplate('structured');
-        updateEndpointPayload();
-
-        // Auto-refresh health check every 30 seconds
-        setInterval(async () => {
-            try {
-                const response = await fetch('/health');
-                // Just check if server is responsive, don't update UI
-            } catch (e) {
-                // Server might be down
-            }
-        }, 30000);
+        updateSchema();
+        updateWriterInfo();  // Initialize writer info display
     </script>
 </body>
 </html>
