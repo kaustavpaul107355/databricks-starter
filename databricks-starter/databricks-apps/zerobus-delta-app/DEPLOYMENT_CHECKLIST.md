@@ -51,14 +51,46 @@ GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_cl
 - [x] `env.template` - Environment variable template provided
 
 ### **6. Application Configuration**
-Update these in Databricks Apps environment variables:
+**IMPORTANT**: You do NOT manually set Service Principal credentials!
 
+#### **How It Works:**
+Databricks Apps automatically injects Service Principal credentials when you configure the app with a Service Principal. The app code reads from these automatically-set environment variables.
+
+#### **What You MUST Do:**
+Configure which Service Principal to use (choose ONE method):
+
+**Method A: In databricks.yml**
+```yaml
+resources:
+  apps:
+    databricks-delta-app:
+      permissions:
+        - service_principal_name: "zerobus-writer"
+          level: CAN_MANAGE
+```
+
+**Method B: Via CLI**
 ```bash
-# Required for Zerobus Writer
-DATABRICKS_CLIENT_ID=<your-service-principal-client-id>
-DATABRICKS_CLIENT_SECRET=<your-service-principal-secret>
+databricks apps deploy --service-principal "zerobus-writer"
+```
 
-# Optional overrides (defaults are set in code)
+**Method C: In Databricks Apps UI**
+- Navigate to your app → Settings → Service Principal
+- Select "zerobus-writer" from dropdown
+
+#### **What You DON'T Do:**
+❌ Do NOT manually set these environment variables:
+```bash
+# ❌ WRONG - Don't do this!
+DATABRICKS_CLIENT_ID=...
+DATABRICKS_CLIENT_SECRET=...
+```
+
+These are automatically set by Databricks Apps when you configure the Service Principal.
+
+#### **Optional Environment Variables** (if you want to override defaults):
+```bash
+# Only set these if you want to override the hardcoded defaults
 DEFAULT_CATALOG=kaustavpaul_demo
 DEFAULT_SCHEMA=zerobus_delta
 SQL_WAREHOUSE_ID=dd43ee29fedd958d

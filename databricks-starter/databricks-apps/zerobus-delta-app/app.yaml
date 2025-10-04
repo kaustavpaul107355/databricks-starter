@@ -12,13 +12,31 @@
 # - --host 0.0.0.0: Bind to all network interfaces
 # - --port 8000: Standard port for Databricks Apps
 #
+# IMPORTANT: Service Principal Authentication
+# ===========================================
+# Databricks Apps automatically injects Service Principal credentials when you
+# configure the app with a Service Principal. The credentials are provided as
+# environment variables:
+# - DATABRICKS_CLIENT_ID (automatically set)
+# - DATABRICKS_CLIENT_SECRET (automatically set)
+# - DATABRICKS_HOST (automatically set)
+#
+# To configure the Service Principal for your app deployment:
+# 1. In databricks.yml, specify the Service Principal name
+# 2. OR during deployment via CLI: databricks apps deploy --service-principal <name>
+# 3. OR in Databricks Apps UI: Settings → Service Principal
+#
+# The app code will automatically pick up these credentials from the environment.
+# You do NOT need to manually set these environment variables.
+#
 # This configuration follows Databricks Apps best practices for:
 # - Production-ready ASGI server configuration
 # - Proper network binding for cloud deployment
 # - Standard port allocation
+# - Automatic Service Principal authentication
 #
 # Author: Assistant
 # Created: 2025-10-02
-# Updated: 2025-10-03 - Enhanced documentation and production configuration
+# Updated: 2025-10-04 - Added Service Principal authentication documentation
 
 command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
