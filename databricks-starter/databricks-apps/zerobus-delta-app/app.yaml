@@ -1,4 +1,24 @@
-# Databricks Delta App Configuration
-# Databricks Apps configuration for running the FastAPI application
+# ================================
+# Databricks Direct Write App Configuration
+# ================================
+#
+# This file configures how the Databricks Direct Write App runs in the
+# Databricks Apps environment. It specifies the command to start the
+# FastAPI application using Uvicorn ASGI server.
+#
+# Configuration Details:
+# - uvicorn: High-performance ASGI server for FastAPI
+# - main:app: Points to the FastAPI app instance in main.py
+# - --host 0.0.0.0: Bind to all network interfaces
+# - --port 8000: Standard port for Databricks Apps
+#
+# This configuration follows Databricks Apps best practices for:
+# - Production-ready ASGI server configuration
+# - Proper network binding for cloud deployment
+# - Standard port allocation
+#
+# Author: Assistant
+# Created: 2025-10-02
+# Updated: 2025-10-03 - Enhanced documentation and production configuration
 
 command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

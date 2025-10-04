@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package product_data;
+
+// Product record matching our Delta table schema
+message ProductRecord {
+    string record_id = 1;
+    string product_id = 2;
+    string product_name = 3;
+    double product_price = 4;
+    string category = 5;
+    string sale_start_date = 6;
+    string sale_stop_date = 7;
+    string processed_at = 8;
+    string batch_id = 9;
+    string source = 10;
+}

@@ -1,64 +1,193 @@
-# Zerobus Delta App
+# Databricks Direct Write App
 
-A FastAPI application for processing structured data and writing to Delta tables on Databricks.
+A comprehensive FastAPI application for processing structured data and writing to Delta tables using multiple high-performance writer implementations.
 
-## Overview
+## 🎯 Overview
 
-This application provides a web interface and REST API for submitting structured product data and writing it directly to Delta tables. It uses the Databricks SDK for reliable data writing while maintaining compatibility with Zerobus SDK interfaces.
+This application provides a production-ready solution for ingesting structured data into Databricks Delta tables with support for multiple writing strategies:
 
-## Features
+- **🚀 Zerobus Writer**: High-performance streaming via Zerobus Direct Write API
+- **🏗️ Direct Delta Writer**: SQL-based writing via Databricks SDK  
+- **🧪 Mock Writer**: Testing and development fallback
 
-- **Web UI**: Interactive interface for testing structured data submission
-- **REST API**: Programmatic endpoints for data processing
-- **Direct Delta Writing**: Reliable data writing via Databricks SQL warehouse
-- **Comprehensive Logging**: Detailed logging and error reporting
-- **Multiple Data Schemas**: Support for Products, Users, Orders, and Custom schemas
-
-## Architecture
+## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Web UI        │    │   FastAPI App    │    │  Delta Table    │
-│   (Static HTML) │───▶│   (Python)       │───▶│  (Databricks)   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌──────────────────┐
-                       │ Direct Delta     │
-                       │ Writer Module    │
-                       └──────────────────┘
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
+│   Web UI        │    │   FastAPI App    │    │   Writer System     │
+│   (index.html)  │───▶│   (main.py)      │───▶│   (writers/)        │
+└─────────────────┘    └──────────────────┘    └─────────────────────┘
+                                │                         │
+                                ▼                         ▼
+                       ┌──────────────────┐    ┌─────────────────────┐
+                       │   Data Models    │    │   Delta Tables      │
+                       │   (Pydantic)     │    │   (Databricks)      │
+                       └──────────────────┘    └─────────────────────┘
 ```
 
-## Core Files
+### Key Components
 
-### Application Files
-- **`working_app_clean.py`** - Main FastAPI application with all endpoints
-- **`direct_delta_writer_clean.py`** - Direct Delta table writer implementation
-- **`static/index.html`** - Web UI for testing and interaction
+- **FastAPI Application** (`main.py`): Core web server with REST API endpoints
+- **Writer System** (`writers/`): Modular data writing implementations
+- **Web Interface** (`static/index.html`): Interactive UI for data submission
+- **Configuration** (`app.yaml`, `databricks.yml`): Deployment and runtime configuration
+- **SQL Scripts** (`sql/`): Database setup and maintenance scripts
+- **Documentation** (`docs/`): API references and implementation guides
 
-### Configuration Files
-- **`app_clean.yaml`** - Databricks Apps runtime configuration
-- **`databricks_clean.yml`** - Databricks bundle deployment configuration
-- **`requirements_clean.txt`** - Python dependencies
+## 🚀 Features
 
-## API Endpoints
+### Production Features
+- ✅ **Multi-Writer Architecture**: Choose between Zerobus, Direct Delta, or Mock writers
+- ✅ **Comprehensive Logging**: Structured logging with performance metrics
+- ✅ **Error Handling**: Detailed error reporting with context and troubleshooting
+- ✅ **Data Validation**: Pydantic models with business rule validation
+- ✅ **Source Tracking**: Complete data lineage with writer method tracking
+- ✅ **Performance Monitoring**: Processing time and throughput metrics
 
-### Main Endpoints
-- **`GET /`** - Serve web UI
-- **`GET /health`** - Health check endpoint
-- **`POST /api/v1/process-structured`** - Process structured payload and write to Delta
+### Web Interface Features
+- 🌐 **Interactive Forms**: Easy data entry with validation feedback
+- 🔧 **Writer Selection**: Runtime selection of data writing strategy
+- 📊 **Real-time Status**: Live feedback on processing results
+- 🧹 **Form Management**: Clear, reset, and bulk operations
 
-### Debug Endpoints
-- **`GET /debug/logs`** - Get recent application logs
-- **`GET /debug/environment`** - Get environment information
-- **`GET /debug/delta-writer`** - Check Delta writer status
+### Developer Features
+- 🔧 **Modular Design**: Easy to extend with new writer implementations
+- 🧪 **Testing Support**: Mock writer for safe development and testing
+- 📚 **Comprehensive Documentation**: Detailed code comments and API docs
+- 🛠️ **Debug Endpoints**: Built-in debugging and status monitoring
 
-## Data Schema
+## 📁 Project Structure
 
-### Product Schema (Default)
-```json
+```
+databricks-direct-write-app/
+├── 📄 main.py                    # Main FastAPI application
+├── 📄 app.yaml                   # Databricks app configuration
+├── 📄 databricks.yml             # Asset bundle configuration
+├── 📄 requirements.txt           # Python dependencies
+├── 📄 README.md                  # This file
+├── 📁 static/                    # Web UI assets
+│   └── index.html               # Main web interface
+├── 📁 writers/                   # Data writer implementations
+│   ├── __init__.py              # Package initialization
+│   ├── base.py                  # Abstract base classes
+│   ├── direct_delta.py          # Direct Delta writer
+│   ├── zerobus.py               # Zerobus writer
+│   └── factory.py               # Writer factory
+├── 📁 sql/                       # Database scripts
+│   ├── README.md                # SQL documentation
+│   ├── grant_permissions.sql    # Permission setup
+│   ├── simple_table_fix.sql     # Table maintenance
+│   └── *.sql                    # Other SQL utilities
+├── 📁 docs/                      # Documentation
+│   ├── README.md                # Documentation index
+│   ├── *.pdf                    # API references
+│   └── zerobus_reference.txt    # Implementation notes
+├── 📁 zerobus_sdk/              # Zerobus SDK
+│   ├── aio/                     # Async SDK
+│   ├── shared/                  # Shared utilities
+│   └── sync/                    # Sync SDK
+├── 📄 product_record.proto       # Protobuf schema
+└── 📄 product_record_pb2.py      # Generated protobuf classes
+```
+
+## 🛠️ Setup and Installation
+
+### Prerequisites
+
+- Python 3.8+
+- Databricks workspace access
+- Databricks CLI configured
+- SQL warehouse access
+
+### Local Development
+
+1. **Clone and navigate to the project**:
+   ```bash
+   cd databricks-starter/databricks-apps/zerobus-delta-app
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run locally**:
+   ```bash
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+4. **Access the application**:
+   - Web UI: http://localhost:8000
+   - API docs: http://localhost:8000/docs
+
+### Databricks Deployment
+
+1. **Configure Databricks CLI**:
+   ```bash
+   databricks configure
+   ```
+
+2. **Deploy the application**:
+   ```bash
+   databricks apps deploy zerobus-delta-app --source-code-path /Workspace/Users/your-email/zerobus-delta-app
+   ```
+
+3. **Access the deployed app**:
+   - The deployment will provide a URL for your app
+
+## 🔧 Configuration
+
+### Writer Configuration
+
+The application supports multiple data writers that can be selected at runtime:
+
+#### Zerobus Writer (Default)
+- **Purpose**: High-performance streaming to Delta tables
+- **Features**: Protobuf serialization, OAuth2 authentication, automatic reconnection
+- **Configuration**: Service Principal credentials required
+
+#### Direct Delta Writer
+- **Purpose**: SQL-based writing via Databricks SDK
+- **Features**: Immediate feedback, reliable execution, SQL warehouse integration
+- **Configuration**: SQL warehouse ID and Databricks SDK authentication
+
+#### Mock Writer
+- **Purpose**: Testing and development
+- **Features**: Safe simulation, no data persistence, always available
+- **Configuration**: No configuration required
+
+### Environment Variables
+
+- `ENABLE_ZEROBUS_WRITER`: Enable/disable Zerobus writer (default: true)
+- `ENABLE_DIRECT_DELTA_WRITER`: Enable/disable Direct Delta writer (default: true)
+- `DATABRICKS_CLIENT_ID`: Service Principal client ID for Zerobus
+- `DATABRICKS_CLIENT_SECRET`: Service Principal client secret for Zerobus
+
+## 📊 Usage
+
+### Web Interface
+
+1. **Open the application** in your browser
+2. **Select a writer** from the dropdown (Zerobus, Direct Delta, or Mock)
+3. **Fill in product information**:
+   - Product ID (e.g., "PROD001")
+   - Product Name (e.g., "iPhone 15")
+   - Product Price (e.g., 999.99)
+   - Category (electronics, general, clothing, books, home)
+   - Sale dates (YYYY-MM-DD format)
+4. **Click "Process Products Data"** to submit
+5. **Review the results** in the response area
+
+### REST API
+
+#### Process Structured Data
+```bash
+POST /api/v1/process-structured
+Content-Type: application/json
+
 {
   "schema_type": "products",
+  "writer_type": "zerobus",
   "items": [
     {
       "product_id": "PROD001",
@@ -72,160 +201,124 @@ This application provides a web interface and REST API for submitting structured
 }
 ```
 
-### Processing Metadata (Added Automatically)
-- `record_id` - Unique record identifier
-- `processed_at` - Processing timestamp
-- `batch_id` - Batch identifier
-- `source` - Data source identifier
+#### Debug Endpoints
+- `GET /debug/zerobus-availability` - Check Zerobus writer status
+- `GET /debug/direct-delta-availability` - Check Direct Delta writer status
+- `POST /debug/test-direct-delta` - Test Direct Delta writer functionality
 
-## Delta Table Configuration
+## 📈 Monitoring and Logging
 
-- **Catalog**: `kaustavpaul_demo`
-- **Schema**: `zerobus_delta`
-- **Table**: `zerobus_products_data`
-- **Full Name**: `kaustavpaul_demo.zerobus_delta.zerobus_products_data`
+### Structured Logging
 
-## Dependencies
+The application provides comprehensive structured logging:
 
-- **FastAPI 0.109.0** - Web framework
-- **Uvicorn 0.27.0** - ASGI server
-- **Databricks SDK 0.18.0** - Databricks integration
-- **Pandas 2.1.4** - Data processing
-- **Requests 2.31.0** - HTTP client
-
-## Local Development
-
-### Prerequisites
-- Python 3.9+
-- Databricks CLI configured
-- Access to Databricks workspace
-
-### Setup
-```bash
-# Install dependencies
-pip install -r requirements_clean.txt
-
-# Run locally
-uvicorn working_app_clean:app --host 0.0.0.0 --port 8000
+```
+================================================================================
+🚀 NEW REQUEST STARTED - Batch ID: abc123...
+📊 Request Details:
+   - Items Count: 1
+   - Schema Type: 'products'
+   - Writer Type: 'zerobus' (user requested)
+   - Timestamp: 2025-10-03T19:32:00.123456
+📋 Items Preview:
+   - Item 1: PROD001 - iPhone 15 ($999.99)
+================================================================================
 ```
 
-### Access
-- Web UI: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- Health Check: http://localhost:8000/health
+### Performance Metrics
 
-## Deployment to Databricks Apps
+Each request includes detailed performance information:
+- Processing time in milliseconds
+- Throughput (items per second)
+- Writer-specific metrics
+- Success/failure rates
 
-### Prerequisites
-- Databricks CLI configured with staging workspace
-- Profile: `staging-pat` or equivalent
+### Error Handling
 
-### Deploy
-```bash
-# Upload source files
-databricks workspace import /Workspace/Users/your.email@databricks.com/zerobus-delta-app/working_app_clean.py --file working_app_clean.py --format RAW --profile staging-pat
+Comprehensive error reporting with:
+- Detailed error messages
+- Stack traces for debugging
+- Context information
+- Suggested remediation steps
 
-databricks workspace import /Workspace/Users/your.email@databricks.com/zerobus-delta-app/direct_delta_writer_clean.py --file direct_delta_writer_clean.py --format RAW --profile staging-pat
+## 🗃️ Database Setup
 
-databricks workspace import /Workspace/Users/your.email@databricks.com/zerobus-delta-app/app_clean.yaml --file app_clean.yaml --format RAW --profile staging-pat
+### Table Creation
 
-databricks workspace import /Workspace/Users/your.email@databricks.com/zerobus-delta-app/requirements_clean.txt --file requirements_clean.txt --format RAW --profile staging-pat
+Use the provided SQL scripts to set up your Delta tables:
 
-# Deploy app
-DATABRICKS_CONFIG_PROFILE=staging-pat databricks apps deploy zerobus-delta-app --source-code-path /Workspace/Users/your.email@databricks.com/zerobus-delta-app
+```sql
+-- Create a Zerobus-compatible table
+CREATE TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean (
+    record_id STRING,
+    product_id STRING,
+    product_name STRING,
+    product_price DOUBLE,
+    category STRING,
+    sale_start_date STRING,
+    sale_stop_date STRING,
+    processed_at STRING,
+    batch_id STRING,
+    source STRING
+) USING DELTA;
 ```
 
-## Configuration
+### Permissions
 
-### Environment Variables
-- `DATABRICKS_HOST` - Databricks workspace URL
-- `DATABRICKS_TOKEN` - Authentication token
-- `DATABRICKS_CLIENT_ID` - OAuth client ID (optional)
-- `DATABRICKS_CLIENT_SECRET` - OAuth client secret (optional)
+Grant necessary permissions to the Service Principal:
 
-### SQL Warehouse
-- **Warehouse ID**: `791ba2a31c7fd70a` (Starter Endpoint)
-- **Purpose**: Execute SQL INSERT statements for Delta table writing
-
-## Monitoring and Debugging
-
-### Logs
-Access logs via the debug endpoint:
-```bash
-curl https://your-app-url/debug/logs
+```sql
+-- Grant permissions for Zerobus integration
+GRANT USE_CATALOG ON CATALOG kaustavpaul_demo TO `your-service-principal-id`;
+GRANT USE_SCHEMA ON SCHEMA kaustavpaul_demo.zerobus_delta TO `your-service-principal-id`;
+GRANT MODIFY ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `your-service-principal-id`;
+GRANT SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `your-service-principal-id`;
 ```
 
-### Health Check
-Monitor app health:
-```bash
-curl https://your-app-url/health
-```
-
-### Delta Writer Status
-Check Delta writer configuration:
-```bash
-curl https://your-app-url/debug/delta-writer
-```
-
-## Error Handling
-
-The application provides comprehensive error handling:
-
-- **Import Errors**: Graceful fallback when modules are unavailable
-- **SQL Errors**: Detailed error reporting with statement IDs
-- **Validation Errors**: Clear messages for invalid input data
-- **Authentication Errors**: Helpful guidance for token issues
-
-## Security
-
-- **Input Validation**: All inputs validated via Pydantic models
-- **SQL Injection Prevention**: Proper SQL escaping and parameterization
-- **Authentication**: Uses Databricks workspace authentication
-- **HTTPS**: Secure communication in production
-
-## Performance
-
-- **Async Processing**: Non-blocking request handling
-- **Batch Processing**: Efficient handling of multiple records
-- **Connection Pooling**: Reused Databricks SDK connections
-- **Error Recovery**: Graceful handling of partial failures
-
-## Troubleshooting
+## 🔍 Troubleshooting
 
 ### Common Issues
 
-1. **"Databricks SDK not available"**
-   - Ensure `databricks-sdk` is installed
-   - Check Python environment
+1. **Zerobus Authentication Errors**
+   - Verify Service Principal credentials
+   - Check table permissions
+   - Ensure table compatibility (no unsupported features)
 
-2. **"WorkspaceClient not initialized"**
-   - Verify Databricks authentication
-   - Check environment variables
+2. **Direct Delta Writer Timeouts**
+   - Check SQL warehouse availability
+   - Verify warehouse permissions
+   - Consider increasing timeout values
 
-3. **"SQL execution failed"**
-   - Verify table exists
-   - Check warehouse permissions
-   - Review SQL syntax in logs
+3. **Table Compatibility Issues**
+   - Use provided SQL scripts to create compatible tables
+   - Disable advanced Delta features (row tracking, domain metadata)
 
-4. **"Invalid token"**
-   - Refresh Databricks token
-   - Verify workspace access
+### Debug Resources
 
-### Debug Steps
-1. Check `/debug/environment` for configuration
-2. Check `/debug/delta-writer` for SDK status
-3. Review `/debug/logs` for detailed error messages
-4. Verify table schema matches data structure
+- Check the `docs/` directory for detailed API documentation
+- Use debug endpoints for real-time status checking
+- Review application logs for detailed error information
+- Consult `sql/README.md` for database setup guidance
 
-## Version History
+## 🤝 Contributing
 
-- **v2.0.0** - Clean, documented version with direct Delta writing
-- **v1.0.0** - Initial version with Zerobus SDK integration attempts
+This application follows Databricks Apps best practices:
 
-## Support
+1. **Code Organization**: Modular design with clear separation of concerns
+2. **Documentation**: Comprehensive inline and external documentation
+3. **Error Handling**: Robust error handling with detailed context
+4. **Testing**: Mock writer for safe development and testing
+5. **Logging**: Structured logging for production monitoring
 
-For issues and questions:
-1. Check debug endpoints for detailed error information
-2. Review application logs
-3. Verify Databricks workspace connectivity
-4. Ensure proper authentication configuration
+## 📝 License
+
+This project is part of the Databricks ecosystem and follows Databricks licensing terms.
+
+## 🏷️ Version History
+
+- **v2.0.0** (2025-10-03): Production release with multi-writer architecture
+- **v1.0.0** (2025-10-02): Initial release with basic functionality
+
+---
+
+For detailed API documentation, see the `docs/` directory or visit `/docs` when running the application.

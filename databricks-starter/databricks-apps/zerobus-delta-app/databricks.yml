@@ -1,6 +1,31 @@
-# Databricks Delta App - Bundle Configuration
-# Configuration for deploying the FastAPI app to Databricks Apps platform
-# Follows Databricks Apps naming and deployment best practices
+# ================================
+# Databricks Direct Write App - Asset Bundle Configuration
+# ================================
+#
+# This file defines the Databricks Asset Bundle configuration for deploying
+# the Databricks Direct Write App to the Databricks Apps platform.
+#
+# Asset Bundle Features:
+# - Automated deployment to Databricks workspace
+# - Environment-specific configuration (dev, staging, prod)
+# - Workspace integration and resource management
+# - Source code path management
+#
+# Configuration Structure:
+# - bundle: Global bundle settings and metadata
+# - workspace: Target workspace configuration
+# - resources: Databricks resources to deploy (apps, jobs, etc.)
+# - targets: Environment-specific overrides
+#
+# This configuration follows Databricks Apps best practices for:
+# - Consistent naming conventions
+# - Proper workspace integration
+# - Environment separation
+# - Resource organization
+#
+# Author: Assistant
+# Created: 2025-10-02
+# Updated: 2025-10-03 - Enhanced documentation and production configuration
 
 bundle:
   name: databricks-delta-app

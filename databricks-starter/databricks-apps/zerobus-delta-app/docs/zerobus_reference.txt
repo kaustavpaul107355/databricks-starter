@@ -1,0 +1,357 @@
+
+
+
+==============================================
+
+
+Grant Doyle
+  Monday at 9:30 AM
+@here Has anyone implemented the Oauth changes yet and would be able to share some code? I'm struggling with the U2M auth flow since we can't use service principals in dogfood. I need to have this change in by EOD for an all-stars demo so any help would be appreciated.
+26 replies
+
+
+Aleksandar Tomic
+  Monday at 9:32 AM
+@Teodor Delibasic, to share the Python SDK code with oauth support.
+
+
+Stephen Carman
+  Monday at 9:33 AM
+IT is forcing me to update my laptop, but once i'm back from that i'm gonna implement it, I'll let you know how I do @Grant Doyle
+
+
+Grant Doyle
+  Monday at 9:33 AM
+Hopefully i'm missing something but generating a client id and secret without a service principal seems to be a pain.
+
+
+Stephen Carman
+  Monday at 9:34 AM
+You are not wrong it is a pain, you should do it via a service principal
+
+
+Grant Doyle
+  Monday at 9:34 AM
+we can't make SPs in dogfood :disappointed:
+
+
+Stephen Carman
+  Monday at 9:34 AM
+Yeah, the SPs need to be done at account level
+9:35
+so we might have to make an IT ticket for it
+
+
+Grant Doyle
+  Monday at 9:36 AM
+@Teodor Delibasic is there a service principal the engineering team has been using that we could leverage?
+
+
+Teodor Delibasic
+  Monday at 9:39 AM
+Let me DM you soon.
+:thank-you:
+1
+
+
+
+
+
+
+Stephen Carman
+  Monday at 9:40 AM
+I also would like SP and keys plz :smile:
+Also sent to the channel ∙ Pinned by 
+Teodor Delibasic
+
+
+Teodor Delibasic
+  Monday at 10:04 AM
+Hey folks, [REDACTED PASTEBIN LINK] are client ID and secret of a Service Principal named zerobus-public. The pastebin lasts for 7 days.
+# zerobus-public
+
+DATABRICKS_CLIENT_ID=<your-service-principal-client-id>
+DATABRICKS_CLIENT_SECRET=<your-service-principal-secret>
+
+Note that you need to give the following permissions to the principal:
+On catalog: USE_CATALOG.
+On schema: USE_SCHEMA.
+On table: MODIFY, SELECT.
+Since you probably don't have permissions to grant permissions on e.g. shinkansen.default.<table>, I'd advise to create your own catalog.
+Let me know if this works for you.
+:thank-you:
+1
+:+1:
+1
+
+10:06
+Here is also my minimal Python example code for US west 2 endpoint on staging and Dogfood WS (you can also find something similar in the documentation):
+import logging
+import os
+
+import record_pb2
+
+from zerobus_sdk import ZerobusSdk, TableProperties, StreamConfigurationOptions, get_zerobus_token
+
+sdk_logger = logging.getLogger("zerobus_sdk")
+sdk_logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+
+formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+sdk_logger.addHandler(console_handler)
+
+# Configuration
+SERVER_ENDPOINT = "6051921418418893.zerobus.us-west-2.staging.cloud.databricks.com"
+DATABRICKS_WORKSPACE_URL = "https://e2-dogfood.staging.cloud.databricks.com"
+
+# Table details
+TABLE_NAME = "shinkansen.default.air_quality_managed"
+
+
+def create_stream():
+    """
+    Creates a stream using the Zerobus SDK with OAuth authentication.
+    """
+    sdk_handle = ZerobusSdk(SERVER_ENDPOINT)
+
+    client_id = os.getenv("DATABRICKS_CLIENT_ID")
+    client_secret = os.getenv("DATABRICKS_CLIENT_SECRET")
+    if not all([client_id, client_secret]):
+        raise ValueError(
+            "DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET environment variables are required for UC table"
+        )
+
+    options = StreamConfigurationOptions(
+        max_inflight_records=15000,
+        token_factory=lambda: get_zerobus_token(
+            TABLE_NAME,
+            SERVER_ENDPOINT.split(".")[0],
+            DATABRICKS_WORKSPACE_URL,
+            client_id,
+            client_secret,
+        ),
+    )
+
+    table_properties = TableProperties(TABLE_NAME, record_pb2.Record.DESCRIPTOR)
+    
+    print(f"Creating stream for table {TABLE_NAME}")
+    stream = sdk_handle.create_stream(table_properties, options)
+    print(f"Stream created for table {TABLE_NAME}")
+
+    for i in range(10000):
+        ack = stream.ingest_record(record_pb2.Record(device_name=f"my_device_{i}", temp=17, humidity=42))
+        if i % 1000 == 0:
+            print(f"Sent {i} records to ingest")
+            ack.wait_for_ack()
+
+    print(f"Closing stream for table {TABLE_NAME}")
+    stream.close()
+    print(f"Stream closed for table {TABLE_NAME}")
+
+
+if __name__ == "__main__":
+    create_stream()
+
+
+Grant Doyle
+  Monday at 10:16 AM
+OAuth test failed: Error making OAuth request: 401 Client Error: Unauthorized for url: https://e2-dogfood.staging.cloud.databricks.com/oidc/v1/token
+Do we have can_use perms on the service principal?
+
+
+Teodor Delibasic
+  Monday at 10:17 AM
+Once you have the client ID and secret I don't think permissions should play a role afterwards
+10:17
+What client exactly are you trying to run
+
+
+Grant Doyle
+  Monday at 10:19 AM
+I am calling get_zerobus_token with the following:
+  Workspace URL: https://e2-dogfood.staging.cloud.databricks.com
+  Client ID: e2......
+  Client Secret: ***
+  Ingest Endpoint: 6051921418418893.zerobus.us-west-2.staging.cloud.databricks.com
+  Table Name: fe_all_stars.salesforce.change_events
+and i've given all perms on the catalog.schema.and tables
+
+
+Teodor Delibasic
+  Monday at 10:22 AM
+I'd advise not giving ALL_PERMISSIONS or whatever it is called, it is very buggy.
+I've added just MODIFY and SELECT permissions to your table to the SP and checked with curl and it works for me.
+Could you please try again.
+
+
+Grant Doyle
+  Monday at 10:23 AM
+That worked lol, thank you!!
+10:23
+Are tokens expiring every 4 hours? Do I need to build in refresh logic for longer lived connections?
+
+
+Teodor Delibasic
+  Monday at 10:25 AM
+No, the SDK handles that for you :slightly_smiling_face:
+The OAuth token that is fetched using the client ID and secret lives for an hour actually, but the server breaks the stream every 15 minutes and then the SDK makes a new connection with a newly fetched token.
+
+
+Grant Doyle
+  Monday at 10:34 AM
+Great stuff, thank you!!
+:np:
+1
+
+Also sent to the channel
+
+
+Grant Doyle
+  1 hour ago
+@Teodor Delibasic It looks like the client id and secret for the SP are no longer valid, is there another one you could share?
+
+
+Teodor Delibasic
+  22 minutes ago
+They work for me, could you share the error you are getting please?
+
+
+Grant Doyle
+  21 minutes ago
+  File "/Users/grant.doyle/LocalRepo/salesforce-zerobus-1/.venv/lib/python3.13/site-packages/zerobus_sdk/shared/definitions.py", line 224, in get_zerobus_token
+    raise NonRetriableException(error_message)
+zerobus_sdk.shared.definitions.NonRetriableException: Error making OAuth request: 401 Client Error: Unauthorized for url: https://e2-dogfood.staging.cloud.databricks.com/oidc/v1/token
+
+
+Teodor Delibasic
+  21 minutes ago
+Did you grant the necessary permissions to the service principal: https://databricks.slack.com/archives/C08FEA6BVLL/p1759158245346309?thread_ts=1759156259.363279&cid=C08FEA6BVLL?
+
+
+
+Teodor Delibasic
+Hey folks, here are client ID and secret of a Service Principal named zerobus-public. The pastebin lasts for 7 days.
+Note that you need to give the following permissions to the principal:
+On catalog: USE_CATALOG.
+On schema: USE_SCHEMA.
+Show more
+From a thread in lakeflow-connect-zerobus | Sep 29th | View reply
+:thank-you:
+1
+
+
+
+Grant Doyle
+  16 minutes ago
+That was it, thank you
+
+
+====================
+
+Grant Doyle
+:spiral_calendar_pad:  3:02 PM
+import zerobus_test_pb2
+from fastapi import FastAPI
+from zerobus_sdk import TableProperties
+from zerobus_sdk.aio import ZerobusSdk
+
+app = FastAPI()
+
+
+ingest_endpoint = "3692013451947905.ingest.staging.cloud.databricks.com"
+
+sdk_handle = ZerobusSdk(
+    ingest_endpoint,
+    "https://dbc-e2f0eb31-2b0e.staging.cloud.databricks.com",
+    "<token>",
+)
+
+
+@app.post("/devices/")
+async def create_device_reading(device_name: str, temp: int, humidity: int):
+    TABLE_NAME = f"grant_doyle.zerobus.{device_name}"
+
+    table_properties = TableProperties(TABLE_NAME, zerobus_test_pb2.testing.DESCRIPTOR)
+    stream = await sdk_handle.create_stream(table_properties)
+
+    await stream.ingest_record(
+        zerobus_test_pb2.testing(device_name=device_name, temp=temp, humidity=humidity)
+    )
+    await stream.flush()
+    await stream.close()
+    return {"message": "Device reading created", "device": device_name}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    # uv run uvicorn lambda_zerobus:app --reload
+
+
+Kaustav Paul
+:spiral_calendar_pad:  3:07 PM
+Thanks
+
+
+Grant Doyle
+:spiral_calendar_pad:  3:38 PM
+one thing, you'll need the create tables to have a few table properties:
+CREATE OR REPLACE TABLE device_two (
+    device_name STRING,
+    temp INT,
+    humidity INT
+)
+TBLPROPERTIES (
+    'delta.autoOptimize.optimizeWrite' = 'true',
+    'delta.autoOptimize.autoCompact' = 'true',
+    'delta.enableRowTracking' = 'false'
+);
+and then you could route to tables like this:
+import zerobus_test_pb2
+from fastapi import FastAPI
+from zerobus_sdk import TableProperties
+from zerobus_sdk.aio import ZerobusSdk
+
+app = FastAPI()
+
+
+ingest_endpoint = "3692013451947905.ingest.staging.cloud.databricks.com"
+
+sdk_handle = ZerobusSdk(
+    ingest_endpoint,
+    "https://dbc-e2f0eb31-2b0e.staging.cloud.databricks.com",
+    "<token>",
+)
+catalog = "grant_doyle"
+schema = "zerobus"
+
+
+@app.post("/devices/")
+async def create_device_reading(device_name: str, temp: int, humidity: int):
+    if device_name == "device_one":
+        table_name = "device_one"
+    elif device_name == "device_two":
+        table_name = "device_two"
+
+    table_properties = TableProperties(
+        f"{catalog}.{schema}.{table_name}", zerobus_test_pb2.testing.DESCRIPTOR
+    )
+    stream = await sdk_handle.create_stream(table_properties)
+
+    await stream.ingest_record(
+        zerobus_test_pb2.testing(device_name=device_name, temp=temp, humidity=humidity)
+    )
+    await stream.flush()
+    await stream.close()
+    return {"message": "Device reading created", "device": device_name}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    # uv run uvicorn lambda_zerobus:app --reload

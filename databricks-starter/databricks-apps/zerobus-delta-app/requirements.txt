@@ -1,5 +1,5 @@
-# Databricks Delta App - Dependencies
-# Core dependencies for FastAPI app with Delta table writing
+# Databricks Direct Write App - Dependencies
+# Core dependencies for FastAPI app with Delta table writing and Zerobus integration
 # Follows Databricks Apps best practices for minimal dependencies
 
 # Web Framework
@@ -14,3 +14,12 @@ pandas==2.1.4
 
 # HTTP Requests
 requests==2.31.0
+
+# Zerobus Direct Write API Dependencies
+# These are the dependencies from databricks_zerobus-0.0.17-py3-none-any.whl
+protobuf>=4.21.0
+grpcio>=1.50.0
+grpcio-tools>=1.50.0
+
+# Note: The actual zerobus_sdk module will be uploaded separately as source files
+# since Databricks Apps doesn't support wheel file installation directly

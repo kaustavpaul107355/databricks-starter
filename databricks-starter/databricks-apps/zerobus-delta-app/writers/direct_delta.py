@@ -25,28 +25,23 @@ from .base import DataWriterInterface, DataWriterError
 
 # Configuration constants
 ENV_ENABLE_KEY = "ENABLE_DIRECT_DELTA_WRITER"
-DEFAULT_WAREHOUSE_ID = "791ba2a31c7fd70a"  # Starter Endpoint SQL Warehouse
+DEFAULT_WAREHOUSE_ID = "dd43ee29fedd958d"  # Updated SQL Warehouse for better performance
 
 # Check if direct Delta writer should be enabled
 IS_ENABLED = os.getenv(ENV_ENABLE_KEY, "false").lower() == "true"
 
 logger = logging.getLogger(__name__)
 
-# Conditional imports based on enablement
-if IS_ENABLED:
-    try:
-        from databricks.sdk import WorkspaceClient
-        from databricks.sdk.service.sql import ExecuteStatementRequestOnWaitTimeout
-        SDK_AVAILABLE = True
-        logger.info("✅ Direct Delta Writer ENABLED - Databricks SDK loaded")
-    except ImportError as e:
-        SDK_AVAILABLE = False
-        SDK_ERROR = str(e)
-        logger.warning(f"⚠️ Databricks SDK not available: {e}")
-else:
+# Always try to import SDK for user-requested Direct Delta Writer
+try:
+    from databricks.sdk import WorkspaceClient
+    from databricks.sdk.service.sql import ExecuteStatementRequestOnWaitTimeout
+    SDK_AVAILABLE = True
+    logger.info("✅ Direct Delta Writer SDK loaded (available for user selection)")
+except ImportError as e:
     SDK_AVAILABLE = False
-    SDK_ERROR = "Direct Delta Writer is disabled via configuration"
-    logger.info("🔒 Direct Delta Writer DISABLED by configuration")
+    SDK_ERROR = str(e)
+    logger.warning(f"⚠️ Databricks SDK not available: {e}")
 
 
 class DirectDeltaWriter(DataWriterInterface):
@@ -103,8 +98,14 @@ class DirectDeltaWriter(DataWriterInterface):
     
     @property
     def is_available(self) -> bool:
-        return (IS_ENABLED and 
-                SDK_AVAILABLE and 
+        """
+        Check if Direct Delta Writer is available
+        
+        Note: This writer can be used even when ENABLE_DIRECT_DELTA_WRITER=false
+        if explicitly requested by the user via the UI. The environment variable
+        only controls the factory's automatic selection.
+        """
+        return (SDK_AVAILABLE and 
                 self._workspace_client is not None and
                 self._initialization_error is None)
     
@@ -151,11 +152,17 @@ class DirectDeltaWriter(DataWriterInterface):
                 "timestamp": datetime.now().isoformat()
             }
         
-        # Real implementation (only runs if available)
-        logger.info(f"📋 Target table: {full_table_name}")
-        logger.info(f"🏗️ Using direct Delta write approach")
-        logger.info(f"🏛️ SQL Warehouse ID: {self.warehouse_id}")
-        logger.info(f"📊 Records to write: {len(data)}")
+        # Enhanced Direct Delta operation logging
+        start_time = datetime.now()
+        logger.info("🏗️" + "=" * 78)
+        logger.info(f"🏗️ DIRECT DELTA WRITE OPERATION STARTED")
+        logger.info(f"📊 Operation Details:")
+        logger.info(f"   - Target Table: {full_table_name}")
+        logger.info(f"   - Records Count: {len(data)}")
+        logger.info(f"   - SQL Warehouse ID: {self.warehouse_id}")
+        logger.info(f"   - Authentication: Databricks SDK")
+        logger.info(f"   - Start Time: {start_time.isoformat()}")
+        logger.info("🏗️" + "=" * 78)
         
         try:
             # Convert data to DataFrame for easier processing
@@ -303,12 +310,36 @@ class DirectDeltaWriter(DataWriterInterface):
                     statement=statement,
                     warehouse_id=self.warehouse_id,
                     on_wait_timeout=ExecuteStatementRequestOnWaitTimeout.CONTINUE,
-                    wait_timeout="60s"  # Wait up to 60 seconds for completion
+                    wait_timeout="45s"  # Wait up to 45 seconds for completion (increased timeout)
                 )
                 
                 # Extract detailed status and error information
                 status_value = result.status.state.value if result.status else "UNKNOWN"
                 error_details = None
+                
+                # If statement is still pending, try to poll for completion
+                if status_value == "PENDING" and result.statement_id:
+                    logger.info(f"⏳ Statement {result.statement_id} is PENDING, polling for completion...")
+                    try:
+                        # Wait a bit more and check status
+                        import time
+                        time.sleep(5)  # Wait 5 more seconds
+                        
+                        # Get updated status
+                        status_response = self._workspace_client.statement_execution.get_statement(result.statement_id)
+                        if status_response and status_response.status:
+                            updated_status = status_response.status.state.value
+                            logger.info(f"📊 Updated statement status: {updated_status}")
+                            
+                            if updated_status in ["SUCCEEDED", "FAILED", "CANCELED"]:
+                                status_value = updated_status
+                                logger.info(f"✅ Statement completed with status: {status_value}")
+                            else:
+                                logger.info(f"⏳ Statement still {updated_status}, may complete later")
+                                
+                    except Exception as poll_error:
+                        logger.warning(f"⚠️ Could not poll statement status: {poll_error}")
+                        # Continue with original PENDING status
                 
                 if result.status and result.status.error:
                     error_details = {
