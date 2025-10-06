@@ -836,14 +836,8 @@ async def check_zerobus_status():
 @app.on_event("startup")
 async def startup_event():
     """Application startup event"""
-    # Configure writer priorities: Zerobus as primary, Direct Delta as available option
-    os.environ["ENABLE_ZEROBUS_WRITER"] = "true"
-    os.environ["ENABLE_DIRECT_DELTA_WRITER"] = "true"  # Available as user option
-    
-    # Set Zerobus service principal credentials (fallback)
-    # NOTE: Set these environment variables in your deployment configuration
-    # os.environ["DATABRICKS_CLIENT_ID"] = "your-service-principal-client-id"
-    # os.environ["DATABRICKS_CLIENT_SECRET"] = "your-service-principal-secret"
+    # Note: Environment variables (DATABRICKS_CLIENT_ID, DATABRICKS_CLIENT_SECRET, etc.) 
+    # are set in app.yaml and automatically available in the runtime environment
     
     # Try to get PAT token from Databricks Apps environment
     try:
@@ -857,13 +851,29 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"⚠️ Could not get PAT token from environment: {e}")
     
+    # Log configuration status
     logger.info("🚀 Databricks Direct Write App starting up...")
     logger.info("✅ FastAPI application initialized")
     logger.info("✅ Static files mounted")
     logger.info("✅ API endpoints registered")
-    logger.info("🚀 Zerobus Writer enabled as PRIMARY choice")
-    logger.info("🏗️ Direct Delta Writer available as FALLBACK choice")
-    logger.info("🔑 Authentication configured (PAT primary, Service Principal fallback)")
+    
+    # Log writer configuration
+    zerobus_enabled = os.getenv("ENABLE_ZEROBUS_WRITER", "false").lower() == "true"
+    direct_delta_enabled = os.getenv("ENABLE_DIRECT_DELTA_WRITER", "false").lower() == "true"
+    
+    if zerobus_enabled:
+        logger.info("🚀 Zerobus Writer ENABLED (Primary choice)")
+        logger.info(f"   - Client ID: {os.getenv('DATABRICKS_CLIENT_ID', 'NOT SET')[:20]}...")
+        logger.info(f"   - Client Secret: {'SET' if os.getenv('DATABRICKS_CLIENT_SECRET') else 'NOT SET'}")
+    else:
+        logger.info("⚠️ Zerobus Writer DISABLED")
+    
+    if direct_delta_enabled:
+        logger.info("🏗️ Direct Delta Writer ENABLED (Fallback choice)")
+    else:
+        logger.info("⚠️ Direct Delta Writer DISABLED")
+    
+    logger.info("🔑 Authentication: Service Principal (zerobus-public) + PAT fallback")
     logger.info("🎯 App ready to process structured data with robust writer selection!")
 
 @app.on_event("shutdown")

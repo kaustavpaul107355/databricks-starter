@@ -51,50 +51,33 @@ GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_cl
 - [x] `env.template` - Environment variable template provided
 
 ### **6. Application Configuration**
-**IMPORTANT**: You do NOT manually set Service Principal credentials!
+**IMPORTANT**: Credentials are configured in `app.yaml` and persist across deployments!
 
 #### **How It Works:**
-Databricks Apps automatically injects Service Principal credentials when you configure the app with a Service Principal. The app code reads from these automatically-set environment variables.
+The `app.yaml` file contains environment variables that are automatically set when the app starts. These credentials are for the `zerobus-public` Service Principal and are required for Zerobus Writer to function.
 
-#### **What You MUST Do:**
-Configure which Service Principal to use (choose ONE method):
-
-**Method A: In databricks.yml**
+#### **Current Configuration (in app.yaml):**
 ```yaml
-resources:
-  apps:
-    databricks-delta-app:
-      permissions:
-        - service_principal_name: "zerobus-writer"
-          level: CAN_MANAGE
+env:
+  - name: DATABRICKS_CLIENT_ID
+    value: "e2037d44-6c92-4fee-9ed5-e59f70eb7107"  # gitleaks:allow
+  - name: DATABRICKS_CLIENT_SECRET
+    value: "dose127056941651a9e3019408598d394cce"  # gitleaks:allow
+  - name: ENABLE_ZEROBUS_WRITER
+    value: "true"
+  - name: ENABLE_DIRECT_DELTA_WRITER
+    value: "true"
 ```
 
-**Method B: Via CLI**
-```bash
-databricks apps deploy --service-principal "zerobus-writer"
-```
+#### **What This Means:**
+- ✅ Credentials are version-controlled in `app.yaml`
+- ✅ They persist across all deployments automatically
+- ✅ No manual configuration needed after deployment
+- ✅ Changes to the app code won't affect credentials
+- ⚠️ If you need to change credentials, edit `app.yaml` and redeploy
 
-**Method C: In Databricks Apps UI**
-- Navigate to your app → Settings → Service Principal
-- Select "zerobus-writer" from dropdown
-
-#### **What You DON'T Do:**
-❌ Do NOT manually set these environment variables:
-```bash
-# ❌ WRONG - Don't do this!
-DATABRICKS_CLIENT_ID=...
-DATABRICKS_CLIENT_SECRET=...
-```
-
-These are automatically set by Databricks Apps when you configure the Service Principal.
-
-#### **Optional Environment Variables** (if you want to override defaults):
-```bash
-# Only set these if you want to override the hardcoded defaults
-DEFAULT_CATALOG=kaustavpaul_demo
-DEFAULT_SCHEMA=zerobus_delta
-SQL_WAREHOUSE_ID=dd43ee29fedd958d
-```
+#### **Security Note:**
+The credentials in `app.yaml` have `# gitleaks:allow` comments to bypass git secret scanning. This is intentional as these are shared staging environment credentials for the `zerobus-public` Service Principal, not production secrets.
 
 ### **7. Testing Plan**
 After deployment, test these scenarios:

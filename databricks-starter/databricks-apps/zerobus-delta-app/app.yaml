@@ -40,3 +40,15 @@
 # Updated: 2025-10-04 - Added Service Principal authentication documentation
 
 command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Environment variables for the application
+# These are set at runtime and persist across deployments
+env:
+  - name: DATABRICKS_CLIENT_ID
+    value: "e2037d44-6c92-4fee-9ed5-e59f70eb7107"  # gitleaks:allow
+  - name: DATABRICKS_CLIENT_SECRET
+    value: "dose127056941651a9e3019408598d394cce"  # gitleaks:allow
+  - name: ENABLE_ZEROBUS_WRITER
+    value: "true"
+  - name: ENABLE_DIRECT_DELTA_WRITER
+    value: "true"
