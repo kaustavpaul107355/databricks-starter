@@ -136,7 +136,7 @@ DATABRICKS_CLIENT_SECRET=your-secret
    ```sql
    GRANT USE_CATALOG ON CATALOG kaustavpaul_demo TO `zerobus-writer`;
    GRANT USE_SCHEMA ON SCHEMA kaustavpaul_demo.zerobus_delta TO `zerobus-writer`;
-   GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `zerobus-writer`;
+   GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_data TO `zerobus-writer`;
    ```
 
 3. **Configure App with Service Principal** (during deployment):
@@ -214,7 +214,7 @@ DATABRICKS_CLIENT_SECRET=your-secret
 -- Run these SQL commands
 GRANT USE_CATALOG ON CATALOG kaustavpaul_demo TO `<service-principal-name>`;
 GRANT USE_SCHEMA ON SCHEMA kaustavpaul_demo.zerobus_delta TO `<service-principal-name>`;
-GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `<service-principal-name>`;
+GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_data TO `<service-principal-name>`;
 ```
 
 ---

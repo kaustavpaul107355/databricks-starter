@@ -2,7 +2,7 @@
 -- Statement ID: 01f0a090-094d-15cf-b840-8373cb61fdcb
 
 -- Check if the record was eventually written
-SELECT * FROM kaustavpaul_demo.zerobus_delta.zerobus_products_clean 
+SELECT * FROM kaustavpaul_demo.zerobus_delta.zerobus_products_data 
 WHERE batch_id = '996114b1-f8af-4bf9-9d23-9bff07cf5061'
 ORDER BY processed_at DESC;
 
@@ -13,6 +13,6 @@ SELECT
     processed_at,
     product_id,
     product_name
-FROM kaustavpaul_demo.zerobus_delta.zerobus_products_clean 
+FROM kaustavpaul_demo.zerobus_delta.zerobus_products_data 
 ORDER BY processed_at DESC 
 LIMIT 10;

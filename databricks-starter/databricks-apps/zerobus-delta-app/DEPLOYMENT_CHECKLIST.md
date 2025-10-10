@@ -15,7 +15,7 @@ This checklist ensures all components are properly configured before deploying t
 - [ ] Catalog exists: `kaustavpaul_demo` (or update to your catalog)
 - [ ] Schema exists: `kaustavpaul_demo.zerobus_delta`
 - [ ] Tables created:
-  - [ ] `zerobus_products_clean` (for Zerobus Writer)
+  - [ ] `zerobus_products_data` (for Zerobus Writer)
   - [ ] `zerobus_products_data` (legacy, for Direct Delta Writer)
 - [ ] Run SQL scripts from `sql/` directory:
   - [ ] `create_new_zerobus_table.sql` - Create compatible tables
@@ -32,7 +32,7 @@ GRANT USE_CATALOG ON CATALOG kaustavpaul_demo TO `<client-id>`;
 GRANT USE_SCHEMA ON SCHEMA kaustavpaul_demo.zerobus_delta TO `<client-id>`;
 
 -- Table permissions
-GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `<client-id>`;
+GRANT MODIFY, SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_data TO `<client-id>`;
 ```
 
 ### **4. Code Review**
@@ -193,7 +193,7 @@ databricks apps logs <app-name>
 3. Query Delta table to verify data:
 
 ```sql
-SELECT * FROM kaustavpaul_demo.zerobus_delta.zerobus_products_clean 
+SELECT * FROM kaustavpaul_demo.zerobus_delta.zerobus_products_data 
 ORDER BY processing_timestamp DESC 
 LIMIT 10;
 ```

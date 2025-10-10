@@ -471,7 +471,7 @@ async def test_direct_delta_writer():
         writer = DirectDeltaWriter()
         
         result = await writer.write_to_delta_table(
-            table_name="zerobus_products_clean",
+            table_name="zerobus_products_data",
             data=test_data,
             schema_name="zerobus_delta",
             catalog_name="kaustavpaul_demo"

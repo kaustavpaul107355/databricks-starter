@@ -415,7 +415,7 @@ These values are currently set for the staging environment and should be updated
 **Mitigation**:
 1. Run `sql/create_new_zerobus_table.sql` to create clean table
 2. Or run `sql/comprehensive_table_fix.sql` to fix existing table
-3. Use `zerobus_products_clean` table instead of `zerobus_products_data`
+3. Use `zerobus_products_data` table for all write operations
 
 ---
 

@@ -249,7 +249,7 @@ Use the provided SQL scripts to set up your Delta tables:
 
 ```sql
 -- Create a Zerobus-compatible table
-CREATE TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean (
+CREATE TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_data (
     record_id STRING,
     product_id STRING,
     product_name STRING,
@@ -271,8 +271,8 @@ Grant necessary permissions to the Service Principal:
 -- Grant permissions for Zerobus integration
 GRANT USE_CATALOG ON CATALOG kaustavpaul_demo TO `your-service-principal-id`;
 GRANT USE_SCHEMA ON SCHEMA kaustavpaul_demo.zerobus_delta TO `your-service-principal-id`;
-GRANT MODIFY ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `your-service-principal-id`;
-GRANT SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_clean TO `your-service-principal-id`;
+GRANT MODIFY ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_data TO `your-service-principal-id`;
+GRANT SELECT ON TABLE kaustavpaul_demo.zerobus_delta.zerobus_products_data TO `your-service-principal-id`;
 ```
 
 ## 🔍 Troubleshooting
