@@ -547,8 +547,8 @@ async def process_structured_payload(payload: StructuredPayload):
             logger.info(f"✅ Writer available: {data_writer.is_available}")
             logger.info(f"👤 User requested: {payload.writer_type}")
             
-            # Write to Delta table - use clean table for Zerobus compatibility
-            table_name = f"zerobus_{payload.schema_type}_clean"  # Use clean table without unsupported features
+            # Write to Delta table
+            table_name = f"zerobus_{payload.schema_type}_data"  # Standard table name
             logger.info(f"📝 Writing {len(processed_data)} records to table: {table_name}")
             
             write_result = await data_writer.write_to_delta_table(

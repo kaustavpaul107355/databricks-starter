@@ -205,7 +205,7 @@ class ZerobusWriter(DataWriterInterface):
             "server_endpoint": self.server_endpoint,
             "workspace_url": self.workspace_url,
             "service_principal": "zerobus-public",
-            "client_id": self.client_id[:8] + "...",  # Masked for security
+            "client_id": self.client_id[:8] + "..." if self.client_id else "NOT_SET",  # Masked for security
             "sdk_available": self._sdk is not None,
             "protobuf_available": self._protobuf_module is not None,
             "enabled": os.getenv("ENABLE_ZEROBUS_WRITER", "false").lower() == "true",
@@ -219,28 +219,11 @@ class ZerobusWriter(DataWriterInterface):
         }
     
     @property
-    def strategies(self) -> List[str]:
-        """Return list of strategies used by this writer"""
-        return self._strategies
-    
-    @property
     def is_available(self) -> bool:
         """Check if Zerobus SDK is available and properly initialized"""
         if not os.getenv("ENABLE_ZEROBUS_WRITER", "false").lower() == "true":
             return False
         return self._sdk is not None and self._protobuf_module is not None
-    
-    def _create_token_factory(self, table_name: str):
-        """Create token factory function for OAuth2 authentication"""
-        def token_factory():
-            return self._get_zerobus_token(
-                table_name,
-                self.server_endpoint.split(".")[0],  # Extract workspace ID
-                self.workspace_url,
-                self.client_id,
-                self.client_secret,
-            )
-        return token_factory
     
     def _convert_to_protobuf(self, data_record: Dict[str, Any]) -> Any:
         """Convert dictionary data to protobuf ProductRecord"""
