@@ -15,11 +15,10 @@ pandas==2.1.4
 # HTTP Requests
 requests==2.31.0
 
-# Zerobus Direct Write API Dependencies
-# These are the dependencies from databricks_zerobus-0.0.17-py3-none-any.whl
-protobuf>=4.21.0
-grpcio>=1.50.0
-grpcio-tools>=1.50.0
+# Zerobus Direct Write API - Official PyPI Package
+# Official SDK from Microsoft/Databricks for Zerobus ingestion
+# Documentation: https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest
+databricks-zerobus-ingest-sdk
 
-# Note: The actual zerobus_sdk module will be uploaded separately as source files
-# since Databricks Apps doesn't support wheel file installation directly
+# Protobuf support for Zerobus record serialization
+grpcio-tools>=1.60.0,<2.0

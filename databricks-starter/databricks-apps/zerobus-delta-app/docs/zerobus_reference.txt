@@ -101,9 +101,15 @@ formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
 console_handler.setFormatter(formatter)
 sdk_logger.addHandler(console_handler)
 
-# Configuration
-SERVER_ENDPOINT = "6051921418418893.zerobus.us-west-2.staging.cloud.databricks.com"
-DATABRICKS_WORKSPACE_URL = "https://e2-dogfood.staging.cloud.databricks.com"
+# Configuration - Updated to production workspace
+# Note: This reference file shows example configuration from staging environment
+# Current production configuration:
+# - Workspace: https://e2-demo-field-eng.cloud.databricks.com
+# - Workspace ID: 1444828305810485
+# - Endpoint: 1444828305810485.zerobus.eastus2.cloud.databricks.com
+
+SERVER_ENDPOINT = "6051921418418893.zerobus.us-west-2.staging.cloud.databricks.com"  # Old staging example
+DATABRICKS_WORKSPACE_URL = "https://e2-dogfood.staging.cloud.databricks.com"  # Old staging example
 
 # Table details
 TABLE_NAME = "shinkansen.default.air_quality_managed"

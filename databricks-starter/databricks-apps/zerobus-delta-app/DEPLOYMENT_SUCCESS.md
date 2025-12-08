@@ -13,7 +13,7 @@
 | **App URL** | https://zerobus-delta-app-6051921418418893.staging.aws.databricksapps.com |
 | **Catalog** | `kaustavpaul_demo` |
 | **Schema** | `zerobus_delta` |
-| **Table** | `zerobus_products_clean` |
+| **Table** | `zerobus_products` |
 | **Primary Writer** | Zerobus Direct Write API |
 | **Fallback Writer** | Direct Delta Writer (SQL Warehouse) |
 | **SQL Warehouse** | `dd43ee29fedd958d` |
@@ -49,7 +49,7 @@ Cleaned workspace to **240KB** (90% reduction) containing only essential files:
 
 ## 📋 Table Name Decision
 
-**Final Choice:** `zerobus_products_clean`
+**Final Choice:** `zerobus_products`
 
 **Why:**
 - Attempts to change to `zerobus_products_data` caused deployment failures
@@ -107,7 +107,7 @@ Access the app at: https://zerobus-delta-app-6051921418418893.staging.aws.databr
 ```
 
 ### Expected Result:
-✅ Data written to `kaustavpaul_demo.zerobus_delta.zerobus_products_clean`
+✅ Data written to `kaustavpaul_demo.zerobus_delta.zerobus_products`
 
 ---
 

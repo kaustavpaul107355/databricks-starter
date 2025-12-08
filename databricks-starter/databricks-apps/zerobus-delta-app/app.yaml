@@ -43,12 +43,12 @@ command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # Environment variables for the application
 # These are set at runtime and persist across deployments
+# 
+# NOTE: Databricks Apps automatically injects Service Principal credentials
+# as DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET. No need to set them here.
+# The app's Service Principal: app-40zbx9 zerobus-delta-app
 env:
-  - name: DATABRICKS_CLIENT_ID
-    value: "e2037d44-6c92-4fee-9ed5-e59f70eb7107"  # gitleaks:allow
-  - name: DATABRICKS_CLIENT_SECRET
-    value: "dose127056941651a9e3019408598d394cce"  # gitleaks:allow
   - name: ENABLE_ZEROBUS_WRITER
-    value: "false"  # TEMPORARILY DISABLED FOR TESTING
+    value: "true"  # Enable Zerobus Writer for high-performance streaming
   - name: ENABLE_DIRECT_DELTA_WRITER
-    value: "true"
+    value: "true"  # Enable Direct Delta Writer as fallback

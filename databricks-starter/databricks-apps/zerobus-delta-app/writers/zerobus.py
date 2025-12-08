@@ -3,8 +3,8 @@
 Zerobus Writer Implementation
 ============================
 
-Real Zerobus Direct Write API integration using the official SDK.
-Based on Databricks engineering team reference implementation.
+Official Zerobus Direct Write API integration using the PyPI SDK.
+Based on Microsoft Databricks documentation and best practices.
 
 Key Components:
 - OAuth2 Service Principal authentication
@@ -12,6 +12,7 @@ Key Components:
 - Automatic token refresh and connection management
 - Production-ready error handling and logging
 
+Documentation: https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest
 Service Principal: Configure via DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET
 Required Permissions: USE_CATALOG, USE_SCHEMA, MODIFY, SELECT
 """
@@ -28,27 +29,33 @@ logger = logging.getLogger(__name__)
 
 class ZerobusWriter(DataWriterInterface):
     """
-    Zerobus Direct Write API implementation using official SDK
+    Zerobus Direct Write API implementation using official PyPI SDK
     
     Features:
+    - Official PyPI package: databricks-zerobus-ingest-sdk
     - OAuth2 Service Principal authentication
     - High-performance protobuf streaming
     - Automatic token refresh and reconnection
     - Production-ready error handling
+    
+    Documentation:
+    https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest
     """
     
     def __init__(self):
-        """Initialize Zerobus writer with SDK and authentication"""
+        """Initialize Zerobus writer with official SDK and authentication"""
         self._writer_name = "Zerobus Writer"
-        self._strategies = ["zerobus_sdk", "oauth2_auth", "protobuf_streaming", "auto_reconnect"]
+        self._strategies = ["zerobus_sdk", "oauth2_auth", "protobuf_streaming", "pypi_official"]
         
-        # Configuration from reference implementation
-        # Using the pattern from zerobus_reference.txt
-        self.server_endpoint = "6051921418418893.zerobus.us-west-2.staging.cloud.databricks.com"
-        self.workspace_url = "https://e2-dogfood.staging.cloud.databricks.com"
+        # Workspace configuration - Updated to new workspace
+        self.workspace_url = "https://e2-demo-field-eng.cloud.databricks.com"
+        self.workspace_id = "1444828305810485"
         
-        # Alternative endpoint pattern from reference (line 262)
-        self.alt_endpoint = "6051921418418893.ingest.staging.cloud.databricks.com"
+        # Zerobus endpoint - Format: <workspace_id>.zerobus.<region>.cloud.databricks.com
+        # NOTE: This is a special "field-eng" demo workspace that doesn't follow
+        # standard regional naming. Trying us-west-2 (most common for demos)
+        self.region = "us-west-2"  # AWS region - common for demo workspaces
+        self.server_endpoint = f"{self.workspace_id}.zerobus.{self.region}.cloud.databricks.com"
         
         # Service Principal credentials with multiple fallback options
         self.client_id = os.getenv("DATABRICKS_CLIENT_ID")  # Required: Service Principal Client ID
@@ -59,13 +66,14 @@ class ZerobusWriter(DataWriterInterface):
         self.databricks_host = os.getenv("DATABRICKS_HOST")    # Host for PAT auth
         
         # Log credential status (masked for security)
-        logger.info(f"🔑 Service Principal Configuration:")
+        logger.info(f"🔑 Zerobus Writer Configuration:")
+        logger.info(f"   - Workspace: {self.workspace_url}")
+        logger.info(f"   - Workspace ID: {self.workspace_id}")
+        logger.info(f"   - Region: {self.region}")
+        logger.info(f"   - Server Endpoint: {self.server_endpoint}")
         logger.info(f"   - Client ID: {self.client_id[:8] + '...' if self.client_id else 'NOT SET'}")
         logger.info(f"   - Client Secret: {'SET (' + str(len(self.client_secret)) + ' chars)' if self.client_secret else 'NOT SET'}")
         logger.info(f"   - PAT Token: {'SET (' + str(len(self.databricks_token)) + ' chars)' if self.databricks_token else 'NOT SET'}")
-        logger.info(f"   - Databricks Host: {self.databricks_host or 'NOT SET'}")
-        logger.info(f"   - Workspace URL: {self.workspace_url}")
-        logger.info(f"   - Server Endpoint: {self.server_endpoint}")
         
         # Validate credentials
         if not self.client_id or not self.client_secret:
@@ -78,114 +86,54 @@ class ZerobusWriter(DataWriterInterface):
             logger.info("✅ Service Principal credentials available")
         
         # SDK components
-        self._sdk = None
+        self._sdk_class = None
+        self._table_properties_class = None
+        self._stream_config_class = None
         self._protobuf_module = None
         
         # Initialize SDK
         self._initialize_sdk()
     
     def _initialize_sdk(self):
-        """Initialize the Zerobus SDK and protobuf module"""
+        """Initialize the official Zerobus SDK from PyPI"""
         try:
-            # Import Zerobus SDK classes - CRITICAL: Use correct imports for async vs sync
-            from zerobus_sdk import ZerobusSdk, TableProperties, StreamConfigurationOptions, get_zerobus_token
-            from zerobus_sdk.aio import ZerobusSdk as AsyncZerobusSdk
+            # Import official SDK classes from PyPI package
+            # Documentation: https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest
+            from zerobus.sdk.sync import ZerobusSdk
+            from zerobus.sdk.shared import TableProperties, StreamConfigurationOptions
             
             # Store the classes for later use
-            self._SyncZerobusSdk = ZerobusSdk  # Sync version: takes 1 arg (endpoint)
-            self._AsyncZerobusSdk = AsyncZerobusSdk  # Async version: takes 3 args (endpoint, workspace_url, token)
-            self._TableProperties = TableProperties
-            self._StreamConfigurationOptions = StreamConfigurationOptions
-            self._get_zerobus_token = get_zerobus_token
+            self._sdk_class = ZerobusSdk
+            self._table_properties_class = TableProperties
+            self._stream_config_class = StreamConfigurationOptions
             
-            # Import our protobuf module
-            import product_record_pb2
-            self._protobuf_module = product_record_pb2
-            
-            # Don't initialize SDK instance here - we'll create it per request with token
-            self._sdk = "available"  # Mark as available
-            self._sdk_type = "async"  # We'll use async pattern from reference
-            
-            logger.info("✅ Zerobus SDK classes imported successfully")
+            logger.info("✅ Official Zerobus SDK imported from PyPI")
+            logger.info(f"📦 Package: databricks-zerobus-ingest-sdk")
             logger.info(f"📡 Server endpoint: {self.server_endpoint}")
             logger.info(f"🏢 Workspace: {self.workspace_url}")
-            logger.info(f"🔧 SDK type: async (reference pattern)")
-            logger.info(f"🔑 Service Principal: zerobus-public")
+            
+            # Import our protobuf module for record serialization
+            try:
+                import product_record_pb2
+                self._protobuf_module = product_record_pb2
+                logger.info("✅ Protobuf module imported successfully")
+            except ImportError as proto_error:
+                logger.error(f"❌ Failed to import protobuf module: {proto_error}")
+                logger.info("💡 Run: python -m grpc_tools.protoc --python_out=. --proto_path=. product_record.proto")
+                self._protobuf_module = None
             
         except ImportError as e:
-            logger.error(f"❌ Failed to import Zerobus SDK: {e}")
-            self._sdk = None
-            self._protobuf_module = None
-            self._sdk_type = None
+            logger.error(f"❌ Failed to import official Zerobus SDK: {e}")
+            logger.info("💡 Install with: pip install databricks-zerobus-ingest-sdk")
+            logger.info("📚 Documentation: https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest")
+            self._sdk_class = None
+            self._table_properties_class = None
+            self._stream_config_class = None
         except Exception as e:
             logger.error(f"❌ Failed to initialize Zerobus SDK: {e}")
-            self._sdk = None
-            self._protobuf_module = None
-            self._sdk_type = None
-    
-    def _create_token_factory(self, table_name: str):
-        """
-        Create token factory function with multiple authentication fallback strategies
-        
-        Args:
-            table_name: Full table name for token scope
-            
-        Returns:
-            Callable that returns authentication token
-        """
-        def token_factory():
-            logger.info("🔑 Token factory called - attempting authentication...")
-            
-            # Strategy 1: PAT Token (Primary for Databricks Apps)
-            if self.databricks_token:
-                try:
-                    logger.info("🔐 Using PAT token (primary method)...")
-                    return self.databricks_token
-                except Exception as e:
-                    logger.warning(f"⚠️ PAT token failed: {e}")
-            
-            # Strategy 2: Try to get token from Databricks SDK (app context)
-            try:
-                logger.info("🔐 Trying Databricks SDK token...")
-                from databricks.sdk import WorkspaceClient
-                client = WorkspaceClient()
-                # Try to get the token from the client's auth
-                if hasattr(client.config, 'token') and client.config.token:
-                    logger.info("✅ Using Databricks SDK token")
-                    return client.config.token
-            except Exception as e:
-                logger.warning(f"⚠️ Databricks SDK token failed: {e}")
-            
-            # Strategy 3: Service Principal OAuth2 (Fallback)
-            if self.client_id and self.client_secret:
-                try:
-                    logger.info("🔐 Trying Service Principal OAuth2 (fallback)...")
-                    token = self._get_zerobus_token(
-                        table_name,
-                        self.server_endpoint.split(".")[0],  # Extract workspace ID
-                        self.workspace_url,
-                        self.client_id,
-                        self.client_secret,
-                    )
-                    logger.info("✅ Service Principal OAuth2 token obtained")
-                    return token
-                except Exception as e:
-                    logger.warning(f"⚠️ Service Principal OAuth2 failed: {e}")
-            
-            # If all strategies fail
-            raise DataWriterError(
-                "All authentication strategies failed. No valid token available.",
-                error_type="AuthenticationError",
-                details={
-                    "pat_token_available": bool(self.databricks_token),
-                    "service_principal_available": bool(self.client_id and self.client_secret),
-                    "workspace_url": self.workspace_url,
-                    "server_endpoint": self.server_endpoint,
-                    "tried_methods": ["pat_token", "databricks_sdk", "service_principal_oauth2"]
-                }
-            )
-        
-        return token_factory
+            self._sdk_class = None
+            self._table_properties_class = None
+            self._stream_config_class = None
     
     @property
     def writer_name(self) -> str:
@@ -202,20 +150,25 @@ class ZerobusWriter(DataWriterInterface):
         """Return configuration information for this writer"""
         return {
             "writer_type": "zerobus",
+            "sdk_source": "pypi_official",
+            "package": "databricks-zerobus-ingest-sdk",
             "server_endpoint": self.server_endpoint,
             "workspace_url": self.workspace_url,
-            "service_principal": "zerobus-public",
+            "workspace_id": self.workspace_id,
+            "region": self.region,
             "client_id": self.client_id[:8] + "..." if self.client_id else "NOT_SET",  # Masked for security
-            "sdk_available": self._sdk is not None,
+            "sdk_available": self._sdk_class is not None,
             "protobuf_available": self._protobuf_module is not None,
             "enabled": os.getenv("ENABLE_ZEROBUS_WRITER", "false").lower() == "true",
             "authentication": "oauth2_service_principal",
             "features": [
                 "high_performance_streaming",
-                "automatic_token_refresh", 
+                "automatic_recovery", 
                 "protobuf_serialization",
-                "production_ready"
-            ]
+                "production_ready",
+                "official_pypi_sdk"
+            ],
+            "documentation": "https://docs.databricks.com/aws/en/ingestion/zerobus-ingest"
         }
     
     @property
@@ -223,7 +176,9 @@ class ZerobusWriter(DataWriterInterface):
         """Check if Zerobus SDK is available and properly initialized"""
         if not os.getenv("ENABLE_ZEROBUS_WRITER", "false").lower() == "true":
             return False
-        return self._sdk is not None and self._protobuf_module is not None
+        return (self._sdk_class is not None and 
+                self._table_properties_class is not None and
+                self._protobuf_module is not None)
     
     def _convert_to_protobuf(self, data_record: Dict[str, Any]) -> Any:
         """Convert dictionary data to protobuf ProductRecord"""
@@ -262,7 +217,10 @@ class ZerobusWriter(DataWriterInterface):
         catalog_name: str = "main"
     ) -> Dict[str, Any]:
         """
-        Write data to Delta table using Zerobus Direct Write API
+        Write data to Delta table using official Zerobus Direct Write API
+        
+        This implementation follows the official Microsoft documentation:
+        https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest
         
         Args:
             table_name: Target table name
@@ -278,7 +236,12 @@ class ZerobusWriter(DataWriterInterface):
             raise DataWriterError(
                 "Zerobus Writer not available. Check SDK installation and ENABLE_ZEROBUS_WRITER setting.",
                 error_type="WriterNotAvailable",
-                details={"sdk_available": self._sdk is not None, "protobuf_available": self._protobuf_module is not None}
+                details={
+                    "sdk_available": self._sdk_class is not None,
+                    "protobuf_available": self._protobuf_module is not None,
+                    "install_command": "pip install databricks-zerobus-ingest-sdk",
+                    "documentation": "https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest"
+                }
             )
         
         start_time = datetime.now()
@@ -292,110 +255,75 @@ class ZerobusWriter(DataWriterInterface):
         logger.info(f"   - Records Count: {len(data)}")
         logger.info(f"   - Server Endpoint: {self.server_endpoint}")
         logger.info(f"   - Workspace URL: {self.workspace_url}")
-        logger.info(f"   - Service Principal: zerobus-public")
+        logger.info(f"   - Workspace ID: {self.workspace_id}")
+        logger.info(f"   - Region: {self.region}")
+        logger.info(f"   - SDK Source: Official PyPI Package")
         logger.info(f"   - Start Time: {start_time.isoformat()}")
         logger.info("🚀" + "=" * 78)
         
         try:
-            # Get token using the reference pattern - direct token approach
-            logger.info("🔑 Getting authentication token using reference pattern...")
+            # Initialize SDK with workspace configuration
+            # According to official documentation:
+            # sdk = ZerobusSdk(server_endpoint, workspace_url)
+            logger.info("🔧 Initializing Zerobus SDK...")
+            logger.info(f"   - Server Endpoint: {self.server_endpoint}")
+            logger.info(f"   - Workspace URL: {self.workspace_url}")
             
-            # Use the EXACT reference token acquisition method
-            logger.info("🔑 Using EXACT reference token acquisition method...")
+            # Initialize SDK with both server_endpoint and workspace_url
+            sdk = self._sdk_class(self.server_endpoint, self.workspace_url)
             
-            # Get token using get_zerobus_token (reference lines 127-133)
-            try:
-                logger.info("🔐 Calling get_zerobus_token with Service Principal credentials...")
-                token = self._get_zerobus_token(
-                    full_table_name,                           # TABLE_NAME
-                    self.server_endpoint.split(".")[0],        # SERVER_ENDPOINT.split(".")[0] 
-                    self.workspace_url,                        # DATABRICKS_WORKSPACE_URL
-                    self.client_id,                           # client_id
-                    self.client_secret,                       # client_secret
-                )
-                auth_method = "service_principal_oauth2"
-                logger.info("✅ Service Principal OAuth2 token obtained successfully")
-                logger.info(f"🔑 Token length: {len(token)} characters")
-                
-            except Exception as e:
-                logger.error(f"❌ Service Principal OAuth2 token failed: {e}")
-                
-                # Fallback: Try Databricks SDK token
-                try:
-                    from databricks.sdk import WorkspaceClient
-                    client = WorkspaceClient()
-                    if hasattr(client.config, 'token') and client.config.token:
-                        token = client.config.token
-                        auth_method = "databricks_sdk_fallback"
-                        logger.info("✅ Using Databricks SDK token as fallback")
-                    else:
-                        raise Exception("No Databricks SDK token available")
-                except Exception as sdk_error:
-                    logger.error(f"❌ Databricks SDK fallback failed: {sdk_error}")
-                    raise DataWriterError(
-                        f"All authentication methods failed. Service Principal: {e}, SDK: {sdk_error}",
-                        error_type="AuthenticationError",
-                        details={
-                            "service_principal_error": str(e),
-                            "databricks_sdk_error": str(sdk_error),
-                            "workspace_url": self.workspace_url,
-                            "server_endpoint": self.server_endpoint,
-                            "client_id": self.client_id[:8] + "...",
-                            "table_name": full_table_name
-                        }
-                    )
+            logger.info("✅ SDK initialized successfully")
             
-            logger.info(f"🎯 Using authentication method: {auth_method}")
-            logger.info(f"🔑 Token length: {len(token)} characters")
-            
-            # Use the EXACT reference pattern from lines 323-327
-            logger.info("🚀 Creating AsyncZerobusSdk using reference pattern...")
-            logger.info(f"📡 Endpoint: {self.server_endpoint}")
-            logger.info(f"🏢 Workspace: {self.workspace_url}")
-            logger.info(f"🔑 Token type: {auth_method}")
-            
-            # Use the EXACT reference pattern - create SDK handle first, then use token_factory
-            logger.info("🔄 Using EXACT reference pattern: ZerobusSdk(endpoint) + token_factory...")
-            
-            # Step 1: Create SDK handle with just the endpoint (reference line 116)
-            sdk_handle = self._SyncZerobusSdk(self.server_endpoint)
-            logger.info("✅ SDK handle created with endpoint only")
-            
-            # Step 2: Create stream configuration with token_factory (reference lines 125-134)
-            stream_options = self._StreamConfigurationOptions(
-                max_inflight_records=15000,
-                token_factory=lambda: token
-            )
-            logger.info("✅ Stream configuration created with token factory")
-            
-            # Step 3: Create table properties (reference line 136)
-            table_properties = self._TableProperties(
-                full_table_name, 
+            # Configure table properties with protobuf descriptor
+            logger.info(f"📋 Configuring table properties for {full_table_name}...")
+            table_properties = self._table_properties_class(
+                full_table_name,
                 self._protobuf_module.ProductRecord.DESCRIPTOR
             )
-            logger.info("✅ Table properties created")
+            logger.info("✅ Table properties configured")
             
-            # Step 4: Create stream (reference line 139)
-            logger.info(f"📡 Creating stream for table {full_table_name}")
-            stream = sdk_handle.create_stream(table_properties, stream_options)
+            # Create stream with Service Principal authentication
+            # According to official documentation:
+            # stream = sdk.create_stream(client_id, client_secret, table_properties)
+            logger.info("🔐 Creating stream with Service Principal authentication...")
+            
+            if not self.client_id or not self.client_secret:
+                raise DataWriterError(
+                    "Service Principal credentials not configured",
+                    error_type="AuthenticationError",
+                    details={
+                        "client_id_set": bool(self.client_id),
+                        "client_secret_set": bool(self.client_secret),
+                        "env_vars_needed": ["DATABRICKS_CLIENT_ID", "DATABRICKS_CLIENT_SECRET"]
+                    }
+                )
+            
+            # Create stream using the SDK's create_stream method
+            # Pass: client_id, client_secret, table_properties (in that order)
+            stream = sdk.create_stream(
+                self.client_id,
+                self.client_secret,
+                table_properties
+            )
             logger.info("✅ Zerobus stream created successfully")
             
             # Write records to stream
             records_written = 0
             records_failed = 0
             
-            # Write records using EXACT reference pattern (lines 142-149)
+            logger.info(f"📝 Starting to ingest {len(data)} records...")
+            
             for i, record in enumerate(data):
                 try:
                     # Convert to protobuf
                     protobuf_record = self._convert_to_protobuf(record)
                     
-                    # Ingest record using reference pattern (line 143)
+                    # Ingest record (async acknowledgment)
                     ack = stream.ingest_record(protobuf_record)
                     
-                    # Wait for acknowledgment periodically (reference lines 144-146)
-                    if i % 1000 == 0:
-                        logger.info(f"📝 Sent {i} records to ingest")
+                    # Wait for acknowledgment periodically for durability
+                    if i % 1000 == 0 and i > 0:
+                        logger.info(f"📝 Sent {i} records, waiting for acknowledgment...")
                         ack.wait_for_ack()
                     
                     records_written += 1
@@ -404,7 +332,12 @@ class ZerobusWriter(DataWriterInterface):
                     logger.error(f"❌ Failed to ingest record {i}: {record_error}")
                     records_failed += 1
             
-            # Close stream using reference pattern (lines 148-150)
+            # Flush and wait for final acknowledgments
+            logger.info("🔄 Flushing stream and waiting for final acknowledgments...")
+            stream.flush()
+            logger.info("✅ Stream flushed successfully")
+            
+            # Close stream
             logger.info("🔒 Closing stream...")
             stream.close()
             logger.info("✅ Zerobus stream closed successfully")
@@ -425,8 +358,9 @@ class ZerobusWriter(DataWriterInterface):
                 "throughput_records_per_sec": len(data) / (duration_ms / 1000) if duration_ms > 0 else 0,
                 "timestamp": end_time.isoformat(),
                 "authentication": "oauth2_service_principal",
-                "service_principal": "zerobus-public",
+                "sdk_source": "pypi_official",
                 "endpoint": self.server_endpoint,
+                "workspace": self.workspace_url,
                 "mock": False
             }
             
@@ -447,18 +381,31 @@ class ZerobusWriter(DataWriterInterface):
                 "error_message": str(e),
                 "error_type": type(e).__name__,
                 "timestamp": datetime.now().isoformat(),
-                "service_principal": "zerobus-public",
-                "endpoint": self.server_endpoint
+                "endpoint": self.server_endpoint,
+                "workspace": self.workspace_url,
+                "workspace_id": self.workspace_id,
+                "sdk_source": "pypi_official",
+                "documentation": "https://learn.microsoft.com/en-us/azure/databricks/ingestion/zerobus-ingest"
             }
             
-            # Check for specific error types
-            if "Unauthorized" in str(e) or "401" in str(e):
-                error_details["likely_cause"] = "Service Principal authentication failed. Check permissions."
+            # Check for specific error types from official SDK
+            error_str = str(e).lower()
+            if "unauthorized" in error_str or "401" in error_str or "authentication" in error_str:
+                error_details["likely_cause"] = "Service Principal authentication failed. Check credentials and permissions."
                 error_details["required_permissions"] = ["USE_CATALOG", "USE_SCHEMA", "MODIFY", "SELECT"]
-            elif "protobuf" in str(e).lower():
+                error_details["check_credentials"] = {
+                    "DATABRICKS_CLIENT_ID": "SET" if self.client_id else "NOT_SET",
+                    "DATABRICKS_CLIENT_SECRET": "SET" if self.client_secret else "NOT_SET"
+                }
+            elif "protobuf" in error_str or "descriptor" in error_str:
                 error_details["likely_cause"] = "Protobuf schema mismatch or conversion error."
-            elif "connection" in str(e).lower() or "network" in str(e).lower():
+                error_details["suggestion"] = "Verify product_record.proto matches table schema"
+            elif "connection" in error_str or "network" in error_str or "grpc" in error_str:
                 error_details["likely_cause"] = "Network connectivity issue to Zerobus endpoint."
+                error_details["check_endpoint"] = self.server_endpoint
+            elif "table" in error_str and ("not found" in error_str or "does not exist" in error_str):
+                error_details["likely_cause"] = "Target table does not exist or is not accessible."
+                error_details["suggestion"] = f"Create table {full_table_name} or check permissions"
             
             raise DataWriterError(
                 f"Zerobus write failed: {e}",

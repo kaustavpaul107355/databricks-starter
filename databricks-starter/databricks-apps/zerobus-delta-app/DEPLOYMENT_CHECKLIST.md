@@ -224,11 +224,11 @@ Test each writer type explicitly:
 ## 📝 **Notes**
 
 ### **Hardcoded Values to Update**
-These values are currently specific to the staging environment and should be updated for your deployment:
+These values are currently configured for the production environment:
 
 1. **Workspace URL** in `databricks.yml`:
-   - Current: `https://e2-dogfood.staging.cloud.databricks.com`
-   - Update to your workspace
+   - Current: `https://e2-demo-field-eng.cloud.databricks.com`
+   - Status: ✅ Updated to production workspace
 
 2. **Catalog/Schema** throughout codebase:
    - Current: `kaustavpaul_demo.zerobus_delta`

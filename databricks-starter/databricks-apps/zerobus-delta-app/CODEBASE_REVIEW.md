@@ -275,11 +275,11 @@ DATABRICKS_HOST               # Workspace URL
 
 ### **Values Specific to Current Environment**
 
-These values are currently set for the staging environment and should be updated for your deployment:
+These values are currently configured for the production environment:
 
-1. **Workspace URL**: `https://e2-dogfood.staging.cloud.databricks.com`
+1. **Workspace URL**: `https://e2-demo-field-eng.cloud.databricks.com`
    - File: `databricks.yml`, line 34
-   - Action: Update to your workspace URL
+   - Status: ✅ Updated to production workspace
 
 2. **Catalog/Schema**: `kaustavpaul_demo.zerobus_delta`
    - Files: `main.py` (line 557-558), SQL scripts

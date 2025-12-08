@@ -388,7 +388,7 @@ async def test_direct_delta_writer():
         writer = DirectDeltaWriter()
         
         result = await writer.write_to_delta_table(
-            table_name="zerobus_products_clean",
+            table_name="zerobus_products",
             data=test_data,
             schema_name="zerobus_delta",
             catalog_name="kaustavpaul_demo"
@@ -464,8 +464,8 @@ async def process_structured_payload(payload: StructuredPayload):
             logger.info(f"✅ Writer available: {data_writer.is_available}")
             logger.info(f"👤 User requested: {payload.writer_type}")
             
-            # Write to Delta table - use clean table for Zerobus compatibility
-            table_name = f"zerobus_{payload.schema_type}_clean"  # Use clean table without unsupported features
+            # Write to Delta table
+            table_name = f"zerobus_{payload.schema_type}"  # Target table name
             logger.info(f"📝 Writing {len(processed_data)} records to table: {table_name}")
             
             write_result = await data_writer.write_to_delta_table(
@@ -753,33 +753,33 @@ async def check_zerobus_status():
 @app.on_event("startup")
 async def startup_event():
     """Application startup event"""
-    # Configure writer priorities: Zerobus as primary, Direct Delta as available option
-    os.environ["ENABLE_ZEROBUS_WRITER"] = "true"
-    os.environ["ENABLE_DIRECT_DELTA_WRITER"] = "true"  # Available as user option
     
-    # Set Zerobus service principal credentials (fallback)
-    os.environ["DATABRICKS_CLIENT_ID"] = "e2037d44-6c92-4fee-9ed5-e59f70eb7107"  # gitleaks:allow
-    os.environ["DATABRICKS_CLIENT_SECRET"] = "dose127056941651a9e3019408598d394cce"  # gitleaks:allow
-    
-    # Try to get PAT token from Databricks Apps environment
-    try:
-        from databricks.sdk import WorkspaceClient
-        client = WorkspaceClient()
-        if hasattr(client.config, 'token') and client.config.token:
-            os.environ["DATABRICKS_TOKEN"] = client.config.token
-            logger.info("✅ PAT token obtained from Databricks Apps environment")
-        else:
-            logger.info("ℹ️ No PAT token available from Databricks Apps environment")
-    except Exception as e:
-        logger.warning(f"⚠️ Could not get PAT token from environment: {e}")
-    
+    # Log environment configuration (credentials auto-injected by Databricks Apps)
     logger.info("🚀 Databricks Direct Write App starting up...")
+    
+    # Log credential availability (masked for security)
+    client_id = os.getenv("DATABRICKS_CLIENT_ID")
+    client_secret = os.getenv("DATABRICKS_CLIENT_SECRET")
+    databricks_token = os.getenv("DATABRICKS_TOKEN")
+    
+    logger.info("🔑 Authentication Configuration:")
+    logger.info(f"   - DATABRICKS_CLIENT_ID: {'SET (' + client_id[:8] + '...)' if client_id else 'NOT_SET'}")
+    logger.info(f"   - DATABRICKS_CLIENT_SECRET: {'SET (' + str(len(client_secret)) + ' chars)' if client_secret else 'NOT_SET'}")
+    logger.info(f"   - DATABRICKS_TOKEN: {'SET (' + str(len(databricks_token)) + ' chars)' if databricks_token else 'NOT_SET'}")
+    
+    # Log writer configuration
+    enable_zerobus = os.getenv("ENABLE_ZEROBUS_WRITER", "false")
+    enable_direct_delta = os.getenv("ENABLE_DIRECT_DELTA_WRITER", "false")
+    
+    logger.info("⚙️ Writer Configuration:")
+    logger.info(f"   - ENABLE_ZEROBUS_WRITER: {enable_zerobus}")
+    logger.info(f"   - ENABLE_DIRECT_DELTA_WRITER: {enable_direct_delta}")
+    
     logger.info("✅ FastAPI application initialized")
     logger.info("✅ Static files mounted")
     logger.info("✅ API endpoints registered")
     logger.info("🚀 Zerobus Writer enabled as PRIMARY choice")
     logger.info("🏗️ Direct Delta Writer available as FALLBACK choice")
-    logger.info("🔑 Authentication configured (PAT primary, Service Principal fallback)")
     logger.info("🎯 App ready to process structured data with robust writer selection!")
 
 @app.on_event("shutdown")
