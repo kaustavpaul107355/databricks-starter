@@ -763,9 +763,9 @@ async def startup_event():
     databricks_token = os.getenv("DATABRICKS_TOKEN")
     
     logger.info("🔑 Authentication Configuration:")
-    logger.info(f"   - DATABRICKS_CLIENT_ID: {'SET (' + client_id[:8] + '...)' if client_id else 'NOT_SET'}")
-    logger.info(f"   - DATABRICKS_CLIENT_SECRET: {'SET (' + str(len(client_secret)) + ' chars)' if client_secret else 'NOT_SET'}")
-    logger.info(f"   - DATABRICKS_TOKEN: {'SET (' + str(len(databricks_token)) + ' chars)' if databricks_token else 'NOT_SET'}")
+    logger.info(f"   - DATABRICKS_CLIENT_ID: {(f'SET ({client_id[:8]}...)') if client_id else 'NOT_SET'}")
+    logger.info(f"   - DATABRICKS_CLIENT_SECRET: {(f'SET ({len(client_secret)} chars)') if client_secret else 'NOT_SET'}")
+    logger.info(f"   - DATABRICKS_TOKEN: {(f'SET ({len(databricks_token)} chars)') if databricks_token else 'NOT_SET'}")
     
     # Log writer configuration
     enable_zerobus = os.getenv("ENABLE_ZEROBUS_WRITER", "false")

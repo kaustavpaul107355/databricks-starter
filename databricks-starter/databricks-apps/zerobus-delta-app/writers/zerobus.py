@@ -71,9 +71,9 @@ class ZerobusWriter(DataWriterInterface):
         logger.info(f"   - Workspace ID: {self.workspace_id}")
         logger.info(f"   - Region: {self.region}")
         logger.info(f"   - Server Endpoint: {self.server_endpoint}")
-        logger.info(f"   - Client ID: {self.client_id[:8] + '...' if self.client_id else 'NOT SET'}")
-        logger.info(f"   - Client Secret: {'SET (' + str(len(self.client_secret)) + ' chars)' if self.client_secret else 'NOT SET'}")
-        logger.info(f"   - PAT Token: {'SET (' + str(len(self.databricks_token)) + ' chars)' if self.databricks_token else 'NOT SET'}")
+        logger.info(f"   - Client ID: {(f'{self.client_id[:8]}...') if self.client_id else 'NOT SET'}")
+        logger.info(f"   - Client Secret: {(f'SET ({len(self.client_secret)} chars)') if self.client_secret else 'NOT SET'}")
+        logger.info(f"   - PAT Token: {(f'SET ({len(self.databricks_token)} chars)') if self.databricks_token else 'NOT SET'}")
         
         # Validate credentials
         if not self.client_id or not self.client_secret:
