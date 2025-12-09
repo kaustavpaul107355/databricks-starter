@@ -67,7 +67,7 @@ if ! databricks current-user me --profile "$DATABRICKS_PROFILE" &>/dev/null; the
     echo "Required environment variables for app.yaml:"
     echo "  - DATABRICKS_WAREHOUSE_ID"
     echo "  - DATABRICKS_HTTP_PATH" 
-    echo "  - DATABRICKS_TOKEN"
+    echo "  - DATABRICKS_TOKEN_FOR_GENIE"
     echo "  - GENIE_SPACE_URL"
     echo "  - AI_BI_Dashboard_URL"
     exit 1
@@ -102,7 +102,7 @@ echo "  • Command: streamlit run app.py"
 echo "  • Environment Variables:"
 echo "    - DATABRICKS_WAREHOUSE_ID (from resource)"
 echo "    - DATABRICKS_HTTP_PATH (configured)"
-echo "    - DATABRICKS_TOKEN (configured)"
+echo "    - DATABRICKS_TOKEN_FOR_GENIE (configured)"
 echo "    - GENIE_SPACE_URL (configured)"
 echo "    - AI_BI_Dashboard_URL (configured)"
 
@@ -263,6 +263,13 @@ echo ""
 echo -e "${YELLOW}🔐 Security Note:${NC}"
 echo "The app uses environment variables for authentication tokens."
 echo "Verify that sensitive credentials are properly configured in app.yaml"
+echo ""
+
+# Feature highlights
+echo -e "${GREEN}✨ New Features in this Version:${NC}"
+echo "  • ⏱️  Graceful timeout handling (5-minute default for Genie queries)"
+echo "  • 💬 Enhanced error messages (user-friendly with actionable guidance)"
+echo "  • 📄 Data pagination controls (50/100/200/500 records per page)"
 echo ""
 
 echo -e "${GREEN}🚀 Your AIBI Genie App is ready for use!${NC}"

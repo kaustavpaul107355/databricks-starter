@@ -12,8 +12,9 @@ env:
 - name: "DATABRICKS_HOST"
   value: "e2-demo-field-eng.cloud.databricks.com"
 - name: "DATABRICKS_TOKEN_FOR_GENIE"
-  value: "YOUR_DATABRICKS_TOKEN_HERE"
+  value: "YOUR_DATABRICKS_TOKEN_HERE"  # ⚠️ REPLACE WITH ACTUAL TOKEN
 - name: "GENIE_SPACE_URL"
   value: "https://e2-demo-field-eng.cloud.databricks.com/api/2.0/genie/spaces/01f050501b7912148a8ee89a422369d6"
 - name: "AI_BI_Dashboard_URL"
   value: "https://e2-demo-field-eng.cloud.databricks.com/embed/dashboardsv3/01f0028b87a2155595c588ca246bf6b7"
+

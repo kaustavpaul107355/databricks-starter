@@ -1,0 +1,45 @@
+# ⚠️ SECURITY: Prevent committing sensitive credentials to git
+
+# App configuration with tokens
+app.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Databricks
+.databricks/
+
+# Local test files
+test_local.py
+*.local.*
+
+# Logs
+*.log
+

@@ -44,7 +44,8 @@ print_info "Setting up local environment variables..."
 export DATABRICKS_HOST="e2-demo-field-eng.cloud.databricks.com"
 export DATABRICKS_HTTP_PATH="/sql/1.0/warehouses/4b9b953939869799"
 export DATABRICKS_TOKEN="YOUR_DATABRICKS_TOKEN_HERE"
-export GENIE_SPACE_URL="https://oregon.cloud.databricks.com/api/2.0/genie/spaces/01f001b1fbc417899f22e8fb835e9e2b"
+export DATABRICKS_TOKEN_FOR_GENIE="YOUR_DATABRICKS_TOKEN_HERE"
+export GENIE_SPACE_URL="https://e2-demo-field-eng.cloud.databricks.com/api/2.0/genie/spaces/01f050501b7912148a8ee89a422369d6"
 export AI_BI_Dashboard_URL="https://e2-demo-field-eng.cloud.databricks.com/embed/dashboardsv3/01f0028b87a2155595c588ca246bf6b7"
 
 # Simulate Databricks warehouse ID (this would normally be injected by the platform)
