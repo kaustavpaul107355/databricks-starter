@@ -65,3 +65,7 @@ config/local_*.py
 *.temp
 
 databricks-app-mas/simple-rag-chatbot/
+# Ignore nested git repo
+databricks-starter/databricks-apps/zerobus-delta-app/.git/
+databricks-starter/databricks-apps/zerobus-delta-app/.gitignore
+ace-hardware-demo/
