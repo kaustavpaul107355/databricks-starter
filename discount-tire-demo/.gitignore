@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+
+ui/node_modules/
+ui/dist/
+ui/.vite/
+ui/app.yaml
+ui_deploy/
+
+# Allow package manifests (root .gitignore ignores *.json)
+!ui/package.json
+!ui/package-lock.json

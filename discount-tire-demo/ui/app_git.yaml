@@ -1,0 +1,13 @@
+command: ["python", "backend/server.py"]
+
+env:
+  - name: "DATABRICKS_HOST"
+    value: "e2-demo-field-eng.cloud.databricks.com"
+  - name: "DATABRICKS_SQL_HTTP_PATH"
+    value: "/sql/1.0/warehouses/4b9b953939869799"
+  - name: "DATABRICKS_TOKEN_FOR_SQL"
+    value: "REPLACE_ME"
+  - name: "GENIE_SPACE_ID"
+    value: "01f0f238cae3172db2f468b919d02bbe"
+  - name: "DATABRICKS_TOKEN_FOR_GENIE"
+    value: "REPLACE_ME"
