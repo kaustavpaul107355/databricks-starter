@@ -102,6 +102,30 @@ export default function App() {
     recognition.start();
   };
 
+  const pickPreferredVoice = (voices: SpeechSynthesisVoice[]) => {
+    const preferredNames = [
+      "Samantha",
+      "Alex",
+      "Google US English",
+      "Google UK English Female",
+      "Microsoft Aria Online (Natural) - English (United States)",
+      "Microsoft Jenny Online (Natural) - English (United States)",
+    ];
+    const preferred = voices.find((voice) => preferredNames.includes(voice.name));
+    if (preferred) {
+      return preferred;
+    }
+    const english = voices.find((voice) => voice.lang.toLowerCase().startsWith("en"));
+    return english || voices[0] || null;
+  };
+
+  const splitForSpeech = (text: string) =>
+    text
+      .replace(/\s+/g, " ")
+      .split(/(?<=[.!?])\s+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
   const handleSpeak = (text: string) => {
     if (!("speechSynthesis" in window)) {
       setAiResponse("Text-to-speech isn't supported in this browser.");
@@ -109,10 +133,36 @@ export default function App() {
     }
 
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-US";
-    utterance.rate = 1;
-    window.speechSynthesis.speak(utterance);
+    const voices = window.speechSynthesis.getVoices();
+    const voice = pickPreferredVoice(voices);
+    
+    // Enhanced text processing: add natural pauses at punctuation
+    const processedText = text
+      .replace(/([.!?])\s+/g, "$1... ") // Add pause after sentence-ending punctuation
+      .replace(/([,;:])\s+/g, "$1. "); // Add slight pause after commas, semicolons, colons
+    
+    const segments = splitForSpeech(processedText);
+
+    const speakSegment = (index: number) => {
+      if (index >= segments.length) {
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(segments[index]);
+      utterance.lang = "en-US";
+      utterance.rate = 0.9; // Slightly slower for more natural cadence
+      utterance.pitch = 1.0; // Neutral pitch sounds more natural
+      utterance.volume = 0.9; // Slightly softer volume
+      if (voice) {
+        utterance.voice = voice;
+      }
+      // Add a small pause between segments for better flow
+      utterance.onend = () => {
+        setTimeout(() => speakSegment(index + 1), 150);
+      };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    speakSegment(0);
   };
 
   useEffect(() => {
@@ -148,7 +198,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen app-shell">
       <Header />
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       

@@ -1,4 +1,5 @@
 import json
+import logging
 import mimetypes
 import os
 import re
@@ -31,6 +32,8 @@ _SQL_CACHE_LOCK = threading.Lock()
 _DASHBOARD_CACHE: Dict[str, Dict[str, Any]] = {}
 _DASHBOARD_CACHE_LOCK = threading.Lock()
 _GENIE_SEMAPHORE = threading.Semaphore(GENIE_MAX_CONCURRENT)
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger("discount_tire_demo")
 
 
 def api_request(url: str, method: str, payload: Optional[Dict[str, Any]], headers: Dict[str, str]) -> tuple[int, Dict[str, Any]]:
@@ -594,8 +597,9 @@ class AppHandler(BaseHTTPRequestHandler):
             table = extract_table(query_result)
 
             self._send_json(200, {"summary": summary, "table": table})
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error processing Genie query.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def do_GET(self) -> None:
         if self.path.startswith("/api/"):
@@ -690,8 +694,9 @@ class AppHandler(BaseHTTPRequestHandler):
             }
             set_cached_dashboard_payload(cache_key, payload)
             self._send_json(200, payload)
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in KPI handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def _handle_charts(self) -> None:
         try:
@@ -754,8 +759,9 @@ class AppHandler(BaseHTTPRequestHandler):
             }
             set_cached_dashboard_payload(cache_key, payload)
             self._send_json(200, payload)
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in charts handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def _handle_revenue(self) -> None:
         try:
@@ -846,8 +852,9 @@ class AppHandler(BaseHTTPRequestHandler):
             }
             set_cached_dashboard_payload(cache_key, payload)
             self._send_json(200, payload)
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in revenue handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def _handle_operations(self) -> None:
         try:
@@ -930,8 +937,9 @@ class AppHandler(BaseHTTPRequestHandler):
             }
             set_cached_dashboard_payload(cache_key, payload)
             self._send_json(200, payload)
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in operations handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def _handle_customers(self) -> None:
         try:
@@ -1038,8 +1046,9 @@ class AppHandler(BaseHTTPRequestHandler):
             }
             set_cached_dashboard_payload(cache_key, payload)
             self._send_json(200, payload)
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in customers handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def _handle_map(self) -> None:
         try:
@@ -1076,8 +1085,9 @@ class AppHandler(BaseHTTPRequestHandler):
             payload = {"locations": table_to_dicts(locations)}
             set_cached_dashboard_payload(cache_key, payload)
             self._send_json(200, payload)
-        except Exception as exc:  # pragma: no cover
-            self._send_json(500, {"error": str(exc)})
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in map handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
 
 def main() -> None:

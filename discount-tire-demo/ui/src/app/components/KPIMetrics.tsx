@@ -12,12 +12,10 @@ interface KPICardProps {
 
 function KPICard({ title, value, trend, icon, subtitle, alert }: KPICardProps) {
   return (
-    <div className={`bg-white rounded-xl shadow-sm border p-6 transition-all hover:shadow-md ${
-      alert ? 'border-amber-200 bg-amber-50/30' : 'border-gray-200'
-    }`}>
+    <div className={`glass-panel rounded-xl p-6 ${alert ? 'border-amber-200 bg-amber-50/40' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className={`p-2 rounded-lg ${
-          alert ? 'bg-amber-100' : 'bg-gray-100'
+          alert ? 'bg-amber-100' : 'bg-white/70'
         }`}>
           {icon}
         </div>

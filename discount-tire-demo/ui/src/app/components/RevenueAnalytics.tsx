@@ -22,9 +22,9 @@ interface StatCardProps {
 
 function StatCard({ title, value, change, icon, positive = true }: StatCardProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="glass-panel rounded-xl p-6">
       <div className="flex items-start justify-between mb-3">
-        <div className="p-2 bg-blue-50 rounded-lg">
+        <div className="p-2 accent-pill rounded-lg">
           {icon}
         </div>
         <span className={`text-sm font-semibold ${positive ? 'text-green-600' : 'text-red-600'}`}>
@@ -179,7 +179,7 @@ export function RevenueAnalytics() {
         </div>
 
         {/* Revenue Trend Chart */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="glass-panel rounded-xl p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue Trend vs Target</h3>
           <ResponsiveContainer width="100%" height={350}>
             <AreaChart data={monthlyRevenueData}>
@@ -226,7 +226,7 @@ export function RevenueAnalytics() {
 
         {/* Regional Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Region (Quarterly)</h3>
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={regionRevenueData}>
@@ -243,7 +243,7 @@ export function RevenueAnalytics() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Category</h3>
             <div className="space-y-4">
               {categoryBreakdownData.map((item: any, index) => (

@@ -23,9 +23,9 @@ interface InsightCardProps {
 
 function InsightCard({ title, value, subtitle, icon, trend }: InsightCardProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="glass-panel rounded-xl p-6">
       <div className="flex items-start justify-between mb-3">
-        <div className="p-2 bg-blue-50 rounded-lg">
+        <div className="p-2 accent-pill rounded-lg">
           {icon}
         </div>
         {trend && (
@@ -197,7 +197,7 @@ export function CustomerInsights() {
         </div>
 
         {/* Satisfaction Trend */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="glass-panel rounded-xl p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Satisfaction Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={satisfactionTrendData}>
@@ -231,7 +231,7 @@ export function CustomerInsights() {
 
         {/* Regional Satisfaction & Service Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Satisfaction by Region</h3>
             <ResponsiveContainer width="100%" height={300}>
             <BarChart data={regionalSatisfactionData} layout="vertical">
@@ -244,7 +244,7 @@ export function CustomerInsights() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Service Usage Distribution</h3>
             <div className="flex items-center justify-center">
               <ResponsiveContainer width="100%" height={300}>
@@ -272,7 +272,7 @@ export function CustomerInsights() {
 
         {/* NPS Breakdown & Feedback Topics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Net Promoter Score Breakdown</h3>
             <div className="space-y-4">
                 {npsData.map((item, index) => (
@@ -305,7 +305,7 @@ export function CustomerInsights() {
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Feedback Topics</h3>
             <div className="space-y-3">
               {feedbackTopicsData.map((topic, index) => (

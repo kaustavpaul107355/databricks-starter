@@ -31,11 +31,9 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, subtitle, icon, alert }: MetricCardProps) {
   return (
-    <div className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border p-6 ${
-      alert ? 'border-orange-300 bg-orange-50/30' : 'border-gray-200'
-    }`}>
+    <div className={`glass-panel rounded-xl p-6 ${alert ? 'border-orange-300 bg-orange-50/40' : ''}`}>
       <div className="flex items-start justify-between mb-3">
-        <div className={`p-2 rounded-lg ${alert ? 'bg-orange-100' : 'bg-gray-100'}`}>
+        <div className={`p-2 rounded-lg ${alert ? 'bg-orange-100' : 'bg-white/70'}`}>
           {icon}
         </div>
       </div>
@@ -157,7 +155,7 @@ export function Operations() {
         </div>
 
         {/* Inventory by Store */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="glass-panel rounded-xl p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Inventory Status by Store</h3>
           <ResponsiveContainer width="100%" height={350}>
             <BarChart data={inventoryByStoreData}>
@@ -183,7 +181,7 @@ export function Operations() {
 
         {/* Stock Turnover & Critical Items */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Stock Turnover Trend</h3>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={stockTurnoverData}>
@@ -203,7 +201,7 @@ export function Operations() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="glass-panel rounded-xl p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Critical Inventory Items</h3>
             <div className="space-y-3 max-h-[280px] overflow-y-auto">
               {criticalInventoryItems.map((item, index) => (
@@ -238,7 +236,7 @@ export function Operations() {
         </div>
 
         {/* Store Performance Table */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="glass-panel rounded-xl p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Store Performance Metrics</h3>
           <div className="overflow-x-auto">
             <table className="w-full">

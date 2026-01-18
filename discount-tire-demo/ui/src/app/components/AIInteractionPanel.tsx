@@ -152,7 +152,7 @@ export function AIInteractionPanel({
   return (
     <div className="space-y-6">
       {/* Input Panel */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+      <div className="glass-panel rounded-2xl p-8">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center gap-4">
             {/* Voice Button */}
@@ -239,7 +239,7 @@ export function AIInteractionPanel({
 
       {/* AI Response Summary */}
       {aiResponse && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-md border border-blue-100 p-8">
+        <div className="glass-panel rounded-2xl p-8 bg-gradient-to-br from-blue-50/70 to-indigo-50/70">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-1">AI Executive Summary</h3>
