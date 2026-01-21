@@ -5,10 +5,17 @@ interface FollowUpQuestionsProps {
 }
 
 const questions = [
-  "What is the monthly distribution of total revenue generated from sales?",
   "What is the distribution of sales by product category?",
-  "What is the distribution of customer satisfaction scores?",
-  "Show total_amount by category",
+  "What is the average customer satisfaction score for sales?",
+  "What is the monthly distribution of total revenue over time?",
+  "Show revenue by month",
+];
+
+const questionColors = [
+  { border: "border-blue-400", shadow: "shadow-blue-200/70", hover: "hover:shadow-blue-300" },
+  { border: "border-green-400", shadow: "shadow-green-200/70", hover: "hover:shadow-green-300" },
+  { border: "border-purple-400", shadow: "shadow-purple-200/70", hover: "hover:shadow-purple-300" },
+  { border: "border-pink-400", shadow: "shadow-pink-200/70", hover: "hover:shadow-pink-300" },
 ];
 
 export function FollowUpQuestions({ onQuestionClick }: FollowUpQuestionsProps) {
@@ -20,15 +27,25 @@ export function FollowUpQuestions({ onQuestionClick }: FollowUpQuestionsProps) {
       </div>
       
       <div className="flex flex-wrap gap-3">
-        {questions.map((question, index) => (
-          <button
-            key={index}
-            onClick={() => onQuestionClick(question)}
-          className="px-4 py-2 bg-white/70 hover:bg-blue-50/80 border border-white/70 hover:border-blue-200 rounded-full text-sm text-gray-700 hover:text-blue-700 transition-all"
-          >
-            {question}
-          </button>
-        ))}
+        {questions.map((question, index) => {
+          const colors = questionColors[index % questionColors.length];
+          return (
+            <button
+              key={index}
+              onClick={() => onQuestionClick(question)}
+              className={`
+                px-4 py-2.5 bg-white/80 backdrop-blur-sm
+                border-2 ${colors.border}
+                shadow-md ${colors.shadow} ${colors.hover}
+                rounded-full text-sm font-medium text-gray-700 
+                hover:text-gray-900 hover:scale-105
+                transition-all duration-300
+              `}
+            >
+              {question}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

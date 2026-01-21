@@ -26,6 +26,7 @@ export default function App() {
   const [aiTable, setAiTable] = useState<GenieResponse["table"]>(null);
   const [aiQuestion, setAiQuestion] = useState<string | null>(null);
   const [voiceDraft, setVoiceDraft] = useState<string | null>(null);
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const handleQuerySubmit = async (query: string) => {
@@ -169,6 +170,14 @@ export default function App() {
     return () => recognitionRef.current?.stop();
   }, []);
 
+  useEffect(() => {
+    // Trigger fade out/blur when tab changes
+    setIsTabTransitioning(true);
+    // Keep in transitioning state briefly, then fade in
+    const timer = setTimeout(() => setIsTabTransitioning(false), 100);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "home":
@@ -203,7 +212,15 @@ export default function App() {
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {renderTabContent()}
+        <div 
+          className={`transition-all duration-300 ease-in-out ${
+            isTabTransitioning 
+              ? 'opacity-0 blur-sm scale-98' 
+              : 'opacity-100 blur-0 scale-100'
+          }`}
+        >
+          {renderTabContent()}
+        </div>
       </main>
       
       <GovernanceFooter />

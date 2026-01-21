@@ -603,6 +603,9 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if self.path.startswith("/api/"):
+            if self.path == "/api/user":
+                self._handle_user()
+                return
             if self.path == "/api/dashboard/kpis":
                 self._handle_kpis()
                 return
@@ -1048,6 +1051,36 @@ class AppHandler(BaseHTTPRequestHandler):
             self._send_json(200, payload)
         except Exception:  # pragma: no cover
             logger.exception("Unhandled error in customers handler.")
+            self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
+
+    def _handle_user(self) -> None:
+        """Return authenticated user information from Databricks App context."""
+        try:
+            # Databricks Apps inject user context via X-Forwarded headers
+            user_email = self.headers.get("X-Forwarded-Email", "")
+            user_name = self.headers.get("X-Forwarded-Preferred-Username", "")
+            
+            # Fallback to environment or default if headers not present
+            if not user_email:
+                user_email = os.getenv("USER_EMAIL", "executive@discounttire.com")
+            if not user_name:
+                user_name = os.getenv("USER_NAME", "Executive User")
+            
+            # Extract first/last name if email format is first.last@domain
+            display_name = user_name
+            if not user_name or user_name == user_email:
+                # Try to derive name from email
+                local_part = user_email.split("@")[0] if "@" in user_email else user_email
+                name_parts = local_part.replace(".", " ").replace("_", " ").title().split()
+                display_name = " ".join(name_parts) if name_parts else "Executive User"
+            
+            self._send_json(200, {
+                "name": display_name,
+                "email": user_email,
+                "role": "Executive Viewer"
+            })
+        except Exception:  # pragma: no cover
+            logger.exception("Unhandled error in user handler.")
             self._send_json(500, {"error": "An unexpected error occurred. Please try again."})
 
     def _handle_map(self) -> None:

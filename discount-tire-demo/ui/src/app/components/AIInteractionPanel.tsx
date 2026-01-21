@@ -180,12 +180,20 @@ export function AIInteractionPanel({
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask about revenue, tire sales, inventory health, or customer satisfaction..."
                 disabled={inputState === "listening" || inputState === "processing"}
-                className="w-full px-6 py-4 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none disabled:bg-gray-50"
+                className="w-full px-6 py-4 rounded-xl border-2 border-indigo-400 bg-white/80 backdrop-blur-sm
+                  shadow-md shadow-indigo-200/70 
+                  focus:border-indigo-500 focus:shadow-lg focus:shadow-indigo-300 focus:scale-[1.01]
+                  transition-all duration-300 outline-none 
+                  disabled:bg-gray-50 disabled:border-gray-300 disabled:shadow-gray-200/50"
               />
               {inputValue && (
                 <button
                   type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg 
+                    bg-gradient-to-br from-indigo-500 to-indigo-600 
+                    hover:from-indigo-600 hover:to-indigo-700 
+                    shadow-md hover:shadow-lg hover:scale-105
+                    text-white transition-all duration-300"
                 >
                   <Send className="w-5 h-5" />
                 </button>
