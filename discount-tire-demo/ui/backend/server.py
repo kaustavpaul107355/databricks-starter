@@ -1,3 +1,4 @@
+import gzip
 import json
 import logging
 import mimetypes
@@ -18,13 +19,27 @@ try:
 except Exception:  # pragma: no cover
     dbsql = None
 
+# Initialize logger before any usage
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger("discount_tire_demo")
 
+try:
+    from backend.db_pool import run_sql_with_pool, get_sql_pool
+    _USE_POOL = True
+except ImportError:
+    _USE_POOL = False
+    logger.warning("Connection pool not available, falling back to direct connections")
+
+
+# Configuration constants
 BASE_DIR = Path(__file__).resolve().parents[1]
 DIST_DIR = BASE_DIR / "dist"
 GENIE_CACHE_TTL_SECONDS = int(os.getenv("GENIE_CACHE_TTL_SECONDS", "300"))
 SQL_CACHE_TTL_SECONDS = int(os.getenv("SQL_CACHE_TTL_SECONDS", "300"))
 DASHBOARD_CACHE_TTL_SECONDS = int(os.getenv("DASHBOARD_CACHE_TTL_SECONDS", "120"))
 GENIE_MAX_CONCURRENT = int(os.getenv("GENIE_MAX_CONCURRENT", "1"))
+
+# Cache stores
 _GENIE_CACHE: Dict[str, Dict[str, Any]] = {}
 _GENIE_CACHE_LOCK = threading.Lock()
 _SQL_CACHE: Dict[str, Dict[str, Any]] = {}
@@ -32,8 +47,6 @@ _SQL_CACHE_LOCK = threading.Lock()
 _DASHBOARD_CACHE: Dict[str, Dict[str, Any]] = {}
 _DASHBOARD_CACHE_LOCK = threading.Lock()
 _GENIE_SEMAPHORE = threading.Semaphore(GENIE_MAX_CONCURRENT)
-logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
-logger = logging.getLogger("discount_tire_demo")
 
 
 def api_request(url: str, method: str, payload: Optional[Dict[str, Any]], headers: Dict[str, str]) -> tuple[int, Dict[str, Any]]:
@@ -355,6 +368,10 @@ def run_genie_sql(base_url: str, headers: Dict[str, str], sql: str) -> Optional[
 
 
 def run_direct_sql(sql: str) -> Optional[Dict[str, Any]]:
+    """
+    Execute SQL query against Databricks SQL Warehouse.
+    Uses connection pool if available for better performance.
+    """
     if dbsql is None:
         return None
     host = os.getenv("DATABRICKS_HOST")
@@ -370,6 +387,34 @@ def run_direct_sql(sql: str) -> Optional[Dict[str, Any]]:
         if cached and now - cached["ts"] < SQL_CACHE_TTL_SECONDS:
             return cached["table"]
 
+    # Try connection pool first if available
+    if _USE_POOL:
+        try:
+            rows = run_sql_with_pool(sql)
+            if rows is not None:
+                if not rows:
+                    table = {"columns": [], "rows": []}
+                else:
+                    # Extract columns from first row
+                    if hasattr(rows[0], 'asDict'):
+                        columns = list(rows[0].asDict().keys())
+                        formatted_rows = [[row.asDict().get(col) for col in columns] for row in rows]
+                    else:
+                        columns = [f"col_{i}" for i in range(len(rows[0]))]
+                        formatted_rows = [list(row) for row in rows]
+                    
+                    table = {
+                        "columns": columns,
+                        "rows": [[None if value is None else str(value) for value in row] for row in formatted_rows],
+                    }
+                
+                with _SQL_CACHE_LOCK:
+                    _SQL_CACHE[cache_key] = {"ts": time.time(), "table": table}
+                return table
+        except Exception as e:
+            logger.warning(f"Pool query failed, falling back to direct connection: {e}")
+
+    # Fallback to direct connection
     try:
         with dbsql.connect(server_hostname=host, http_path=http_path, access_token=token) as conn:
             with conn.cursor() as cursor:
@@ -499,12 +544,29 @@ def extract_sql(message: Dict[str, Any], query_result: Optional[Dict[str, Any]])
 
 class AppHandler(BaseHTTPRequestHandler):
     def _send_json(self, status: int, payload: dict) -> None:
+        """Send JSON response with optional gzip compression."""
         body = json.dumps(payload).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        
+        # Enable compression for responses > 1KB if client supports it
+        accept_encoding = self.headers.get("Accept-Encoding", "")
+        should_compress = "gzip" in accept_encoding and len(body) > 1024
+        
+        if should_compress:
+            compressed_body = gzip.compress(body, compresslevel=6)
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Encoding", "gzip")
+            self.send_header("Content-Length", str(len(compressed_body)))
+            self.send_header("Vary", "Accept-Encoding")
+            self.end_headers()
+            self.wfile.write(compressed_body)
+            logger.debug(f"Compressed response: {len(body)} -> {len(compressed_body)} bytes ({100 * len(compressed_body) / len(body):.1f}%)")
+        else:
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
     def _send_file(self, file_path: Path) -> None:
         if not file_path.exists():

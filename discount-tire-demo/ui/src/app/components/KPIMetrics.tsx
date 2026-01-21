@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Star, Package, AlertTriangle } from "lucide-react";
+import { formatCurrency, formatNumber } from "@/utils/formatting";
 
 interface KPICardProps {
   title: string;
@@ -92,14 +93,10 @@ export function KPIMetrics() {
     };
   }, []);
 
-  const formatCurrency = (value: number | null) =>
-    value === null ? "—" : `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
   const formatPercent = (value: number | null) =>
     value === null ? "—" : `${(value * 100).toFixed(1)}%`;
   const formatScore = (value: number | null) =>
     value === null ? "—" : value.toFixed(1);
-  const formatNumber = (value: number | null) =>
-    value === null ? "—" : value.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
   return (
     <div>
@@ -112,7 +109,7 @@ export function KPIMetrics() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <KPICard
           title="Total Revenue"
-          value={formatCurrency(metrics.totalRevenue)}
+          value={formatCurrency(metrics.totalRevenue ?? 0)}
           trend={metrics.revenueGrowth ? Math.round(metrics.revenueGrowth * 100) : undefined}
           subtitle={metrics.currentMonthLabel ? `This Month (${metrics.currentMonthLabel})` : "This Month"}
           icon={<TrendingUp className="w-5 h-5 text-gray-600" />}
@@ -134,14 +131,14 @@ export function KPIMetrics() {
         
         <KPICard
           title="Tire Units Sold"
-          value={formatNumber(metrics.tireUnits)}
+          value={formatNumber(metrics.tireUnits ?? 0)}
           subtitle={metrics.currentMonthLabel ? `This Month (${metrics.currentMonthLabel})` : "This Month"}
           icon={<Package className="w-5 h-5 text-blue-600" />}
         />
         
         <KPICard
           title="Inventory Risk"
-          value={formatNumber(metrics.inventoryRisk)}
+          value={formatNumber(metrics.inventoryRisk ?? 0)}
           subtitle="Low Stock Items"
           alert={true}
           icon={<AlertTriangle className="w-5 h-5 text-amber-600" />}

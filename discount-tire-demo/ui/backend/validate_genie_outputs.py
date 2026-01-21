@@ -1,3 +1,18 @@
+"""
+Genie Output Validation Script
+
+This script validates that Genie responses are correctly parsed by the server's
+extract_summary function. It's used for testing and quality assurance.
+
+Usage:
+    export DATABRICKS_HOST=your-workspace.cloud.databricks.com
+    export DATABRICKS_TOKEN_FOR_GENIE=your-token
+    export GENIE_SPACE_ID=your-space-id
+    python backend/validate_genie_outputs.py
+
+The script will run a set of test questions through Genie and verify that
+summaries are extracted correctly.
+"""
 import os
 import sys
 import time

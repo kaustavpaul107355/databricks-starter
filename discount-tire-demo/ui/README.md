@@ -19,6 +19,8 @@ A modern, AI-powered executive dashboard for Discount Tire built on Databricks. 
 - **Charts**: Recharts for data visualizations
 - **Maps**: Leaflet + OpenStreetMap tiles
 - **State Management**: React hooks + local state
+- **Code Splitting**: Lazy loading for route-based chunks (Revenue, Operations, Customers, Map)
+- **Performance**: Gzip compression, optimized bundle splitting
 
 ### Backend (`backend/server.py`)
 - **Server**: Python HTTP server (ThreadingHTTPServer)
@@ -27,10 +29,11 @@ A modern, AI-powered executive dashboard for Discount Tire built on Databricks. 
   - `/api/genie/query` - Natural language queries via Genie
   - `/api/dashboard/*` - Live dashboard data endpoints
 - **Data Access**: 
-  - Direct SQL queries to Databricks SQL Warehouse
+  - Direct SQL queries to Databricks SQL Warehouse with connection pooling
   - Fallback to Genie for ad-hoc queries
 - **Caching**: Multi-layer in-memory caching with TTL
 - **Concurrency**: Semaphore-based rate limiting for Genie API
+- **Optimization**: Response compression (gzip), SQL connection pool
 
 ### Data Layer
 - **Catalog**: `kaustavpaul_demo.dtc_demo`
@@ -44,14 +47,15 @@ A modern, AI-powered executive dashboard for Discount Tire built on Databricks. 
 ```
 ui/
 ├── backend/
-│   ├── server.py              # Main HTTP server
+│   ├── server.py              # Main HTTP server with gzip & pooling
+│   ├── db_pool.py             # SQL connection pool manager
 │   ├── main.py                # Entry point
 │   ├── validate_genie_outputs.py
 │   └── tests/
 │       └── test_genie_parsing.py
 ├── src/
 │   ├── app/
-│   │   ├── App.tsx            # Main app component with tab management
+│   │   ├── App.tsx            # Main app with lazy loading
 │   │   └── components/
 │   │       ├── Header.tsx     # App header with user auth
 │   │       ├── TabNavigation.tsx  # Floating tab buttons
@@ -59,11 +63,17 @@ ui/
 │   │       ├── AIInteractionPanel.tsx  # Voice/text input
 │   │       ├── KPIMetrics.tsx
 │   │       ├── ChartSection.tsx
-│   │       ├── RevenueAnalytics.tsx
-│   │       ├── Operations.tsx
-│   │       ├── CustomerInsights.tsx
-│   │       ├── MapView.tsx    # Leaflet map
+│   │       ├── RevenueAnalytics.tsx  # Lazy loaded
+│   │       ├── Operations.tsx         # Lazy loaded
+│   │       ├── CustomerInsights.tsx   # Lazy loaded
+│   │       ├── MapView.tsx            # Lazy loaded + Leaflet
 │   │       └── GovernanceFooter.tsx
+│   ├── test/
+│   │   ├── setup.ts           # Vitest setup
+│   │   ├── Header.test.tsx
+│   │   ├── TabNavigation.test.tsx
+│   │   ├── GovernanceFooter.test.tsx
+│   │   └── utils.test.ts
 │   ├── assets/
 │   │   ├── DT_logo.svg
 │   │   └── DBX_logo.svg
@@ -73,6 +83,7 @@ ui/
 ├── dist/                      # Build output (git-ignored)
 ├── app.yaml                   # Local/workspace config (git-ignored)
 ├── app_git.yaml               # Sanitized config for git
+├── vitest.config.ts           # Test configuration
 ├── package.json
 └── README.md
 ```
@@ -222,7 +233,7 @@ All dashboard endpoints use **GET** requests and return live data with caching:
 
 ### Environment Variables
 
-| Variable | Description | Default |
+|| Variable | Description | Default |
 |----------|-------------|---------|
 | `DATABRICKS_HOST` | Workspace hostname | Required |
 | `DATABRICKS_SQL_HTTP_PATH` | SQL Warehouse path | Required |
@@ -233,6 +244,7 @@ All dashboard endpoints use **GET** requests and return live data with caching:
 | `SQL_CACHE_TTL_SECONDS` | SQL cache TTL | 300 |
 | `DASHBOARD_CACHE_TTL_SECONDS` | Dashboard cache TTL | 120 |
 | `GENIE_MAX_CONCURRENT` | Max concurrent Genie requests | 1 |
+| `SQL_POOL_SIZE` | SQL connection pool size | 3 |
 | `LOG_LEVEL` | Logging level | INFO |
 | `DATABRICKS_INSECURE` | Disable TLS verification | false |
 
@@ -255,6 +267,23 @@ The backend implements a **three-layer caching system**:
 
 ## 🧪 Testing
 
+### Frontend Tests
+```bash
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run with coverage
+npm run test:coverage
+```
+
+**Test Coverage**:
+- Component rendering (Header, TabNavigation, GovernanceFooter)
+- User interactions (tab changes, button clicks)
+- Utility functions (formatting, data processing)
+
 ### Backend Tests
 ```bash
 # Run Genie parsing tests
@@ -264,13 +293,13 @@ pytest ui/backend/tests/test_genie_parsing.py
 pytest --cov=backend ui/backend/tests/
 ```
 
-### Frontend
+### Build Validation
 ```bash
-# Type checking
+# Type checking + production build
 npm run build
 
-# Linting
-npm run lint  # if configured
+# Check bundle sizes
+npm run build | grep "gzip:"
 ```
 
 ## 🔒 Security

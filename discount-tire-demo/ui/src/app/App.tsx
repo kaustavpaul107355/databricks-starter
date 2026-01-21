@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { Header } from "@/app/components/Header";
 import { TabNavigation } from "@/app/components/TabNavigation";
 import { ExecutiveSummary } from "@/app/components/ExecutiveSummary";
-import { RevenueAnalytics } from "@/app/components/RevenueAnalytics";
-import { Operations } from "@/app/components/Operations";
-import { CustomerInsights } from "@/app/components/CustomerInsights";
-import { MapView } from "@/app/components/MapView";
 import { GovernanceFooter } from "@/app/components/GovernanceFooter";
+
+// Lazy load heavy components for better initial load performance
+const RevenueAnalytics = lazy(() => import("@/app/components/RevenueAnalytics").then(m => ({ default: m.RevenueAnalytics })));
+const Operations = lazy(() => import("@/app/components/Operations").then(m => ({ default: m.Operations })));
+const CustomerInsights = lazy(() => import("@/app/components/CustomerInsights").then(m => ({ default: m.CustomerInsights })));
+const MapView = lazy(() => import("@/app/components/MapView").then(m => ({ default: m.MapView })));
 
 type InputState = "idle" | "listening" | "processing" | "responded";
 
@@ -179,6 +181,13 @@ export default function App() {
   }, [activeTab]);
 
   const renderTabContent = () => {
+    // Loading fallback for lazy-loaded components
+    const LoadingFallback = () => (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+
     switch (activeTab) {
       case "home":
         return (
@@ -194,13 +203,29 @@ export default function App() {
           />
         );
       case "revenue":
-        return <RevenueAnalytics />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <RevenueAnalytics />
+          </Suspense>
+        );
       case "operations":
-        return <Operations />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <Operations />
+          </Suspense>
+        );
       case "customers":
-        return <CustomerInsights />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <CustomerInsights />
+          </Suspense>
+        );
       case "map":
-        return <MapView />;
+        return (
+          <Suspense fallback={<LoadingFallback />}>
+            <MapView />
+          </Suspense>
+        );
       default:
         return null;
     }
