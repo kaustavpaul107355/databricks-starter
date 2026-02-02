@@ -68,4 +68,7 @@ databricks-app-mas/simple-rag-chatbot/
 # Ignore nested git repo
 databricks-starter/databricks-apps/zerobus-delta-app/.git/
 databricks-starter/databricks-apps/zerobus-delta-app/.gitignore
+
+# Ignore standalone demo repos (they have their own git repos)
 ace-hardware-demo/
+discount-tire-demo/
